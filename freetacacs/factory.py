@@ -1,6 +1,6 @@
 from twisted.internet import protocol, reactor
-from exceptions import PacketAttributeNotSet
-from protocol import TACACSPlusProtocol
+from freetacacs.exceptions import PacketAttributeNotSet
+from freetacacs.protocol import TACACSPlusProtocol
 
 class TACACSPlusFactory(protocol.Factory):
     def buildProtocol(self, addr):

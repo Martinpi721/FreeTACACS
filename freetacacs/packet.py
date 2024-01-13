@@ -4,7 +4,6 @@ from hashlib import md5
 from twisted.logger import Logger
 
 # Local imports
-from freetacacs import flags
 
 class TACACSPlusPacket:
     """Class to handle encoding/decoding TACACS+ packets"""

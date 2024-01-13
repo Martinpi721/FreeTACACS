@@ -3,7 +3,7 @@ import struct
 from twisted.logger import Logger
 
 # Local imports
-from freetacacs import flags
+from freetacacs.flags import TAC_PLUS_PACKET_TYPES
 
 class TACACSPlusHeader:
     """Class to hand encoding/decoding the headers of TACACS+ packets"""
@@ -134,7 +134,7 @@ class TACACSPlusHeader:
         """
 
         result = filter(lambda item: item[1] == self._packet_type,
-                                     flags.TAC_PLUS_PACKET_TYPES.items())
+                                     TAC_PLUS_PACKET_TYPES.items())
         return list(result)[0][0]
 
 
@@ -188,7 +188,7 @@ class TACACSPlusHeader:
 
         # Map the hex packet type to a text string
         result = filter(lambda item: item[1] == self._packet_type,
-                                     flags.TAC_PLUS_PACKET_TYPES.items())
+                                     TAC_PLUS_PACKET_TYPES.items())
 
         # There will only ever be one result so take first tuple value from it
         packet_type = list(result)[0][0]

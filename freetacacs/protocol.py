@@ -1,8 +1,7 @@
 from twisted.protocols import basic
 
-import flags
-from packet import TACACSPlusPacket as Packet
-from header import TACACSPlusHeader as Header
+from freetacacs.packet import TACACSPlusPacket as Packet
+from freetacacs.header import TACACSPlusHeader as Header
 
 class TACACSPlusProtocol(basic.LineReceiver):
     """Define the TACACS+ protocol"""
