@@ -1,4 +1,4 @@
-.PHONY: init test clean
+.PHONY: init test clean run
 VENV_DIR=./venv
 
 init:
@@ -11,3 +11,7 @@ test: init
 
 clean:
 	rm -rf $(VENV_DIR)
+
+run: init
+	$(VENV_DIR)/bin/python -m freetacacs.factory
+
