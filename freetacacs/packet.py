@@ -54,6 +54,7 @@ class TACACSPlusPacket:
           obfuscated_body(struct): Obfuscated packet body
         """
 
+        packet_body = list()
         body_length = len(self._body)
 
         # Generate the MD5 hash from header fields and shared secret
@@ -66,15 +67,13 @@ class TACACSPlusPacket:
         pseudo_pad = hashed = md5(hash_input).digest()
 
         # Generate subsequent MD5 hashes and concatenate
-        while len(pseudo_pad) < len(self._body):
-            hash_input += pseudo_pad
-            pseudo_pad += md5(hash_input).digest()
+        while len(pseudo_pad) < body_length:
+            hashed = md5(hash_input + hashed).digest()
+            pseudo_pad += hashed
 
         # Trim pseudo_pad length to length of packet body
         pseudo_pad = pseudo_pad[0:(body_length)]
         pseudo_pad = list(struct.unpack('B' * len(pseudo_pad), pseudo_pad))
-
-        packet_body = []
 
         # Unpack the body structure and XOR each byte with pseudo_pseudo_pad
         for x in struct.unpack('B' * body_length, self._body):
