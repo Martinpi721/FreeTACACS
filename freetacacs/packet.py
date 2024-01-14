@@ -10,7 +10,7 @@ class TACACSPlusPacket:
 
     log = Logger()
 
-    def __init__(self, header, body, secret):
+    def __init__(self, header, body, secret=None):
         """Initialise the packet object
 
         Args:
