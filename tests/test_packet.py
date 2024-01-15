@@ -1,7 +1,13 @@
-import pytest
+"""
+Module provides unit tests for the packet module
 
+Classes:
+    TestTACACSPlusPacket
+
+Functions:
+    None
+"""
 import six
-import struct
 
 # Import code to be tested
 from freetacacs.flags import TAC_PLUS_AUTHEN
@@ -11,6 +17,8 @@ from freetacacs.header import TACACSPlusHeader as Header
 # Import exceptions
 
 class TestTACACSPlusPacket:
+    """Test class for testing the packet module"""
+
     def test_create_instance(self):
         """Test we can create a instance of TACACSPlusPacket class"""
 
