@@ -1,3 +1,12 @@
+"""
+Module provides TACACS+ packet flag variables
+Classes:
+    None
+
+Functions:
+    None
+"""
+
 # Set for testing purposes only
 TAC_PLUS_UNENCRYPTED_FLAG = 0x01
 
@@ -103,4 +112,3 @@ TAC_PLUS_ACCT_FLAGS = {
 TAC_PLUS_ACCT_STATUS_SUCCESS = 0x01
 TAC_PLUS_ACCT_STATUS_ERROR = 0x02
 TAC_PLUS_ACCT_STATUS_FOLLOW = 0x21
-

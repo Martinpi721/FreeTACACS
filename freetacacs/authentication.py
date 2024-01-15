@@ -1,7 +1,16 @@
-import six
+"""
+Module implements TACACS+ authentication packets
+
+Classes:
+    TACACSPlusAuthenStart
+    TACACSPlusAuthenReply
+
+Functions:
+    None
+"""
 import struct
-import hashlib
 import logging
+import six
 
 # Local imports
 from freetacacs import flags
@@ -40,11 +49,11 @@ class TACACSPlusAuthenStart(Packet):
         # |    data...
         # +----------------+----------------+----------------+----------------+
 
-        fields = dict()
+        fields = {}
 
         # Deobfuscate the packet if required
         raw = six.BytesIO(self._body)
-        if self._secret != None:
+        if self._secret is not None:
             body = six.BytesIO(self.deobfuscate)
         else:
             body = raw
@@ -88,7 +97,11 @@ class TACACSPlusAuthenStart(Packet):
 class TACACSPlusAuthenReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet bodies"""
 
-    def __init__(self, header, body=six.b(''), fields=dict(), secret=None):
+    def __init__(self, header, body=six.b(''),
+                 fields={'status': 0,
+                         'flags': 0,
+                         'server_msg': '',
+                         'data': ''}, secret=None):
         """Initialise a TACAS+ Authentication REPLY packet body
 
         Initialise a TACACS+ Authentication REPLY packet. This can be done by
@@ -158,4 +171,4 @@ class TACACSPlusAuthenReply(Packet):
         except TypeError as e:
             raise ValueError('Unable to encode AuthenReply packet. Required' \
                              ' arguments server_msg and data must be strings') from e
-
+        return None
