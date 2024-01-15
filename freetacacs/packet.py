@@ -1,17 +1,18 @@
 import six
 import struct
+import logging
 from hashlib import md5
-from twisted.logger import Logger
 
-# Local imports
+log = logging.getLogger(__name__)
 
 class TACACSPlusPacket:
-    """Class to handle encoding/decoding TACACS+ packets"""
+    """Base class to handle encoding/decoding TACACS+ packet bodies.
 
-    log = Logger()
+    All TACACS+ packet type(s) START, REPLY, CONTINUE etc inherit from here.
+    """
 
     def __init__(self, header, body, secret=None):
-        """Initialise the packet object
+        """Initialise a TACAS+ packet body
 
         Args:
           header(obj): instance of a TACACSPlusHeader class

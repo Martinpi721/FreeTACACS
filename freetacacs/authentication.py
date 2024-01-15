@@ -17,9 +17,7 @@ class TACACSPlusAuthenStart(Packet):
         """Decode a TACAS+ Authentication start packet body
 
         Args:
-          header(obj): TACACSPlusHeader instance
-          byte_body(byte): containing TACACS+ authentication start packet body
-          secret(str): containing the TACACS+ shared secret
+          None
         Exceptions:
           ValueError
         Returns:
