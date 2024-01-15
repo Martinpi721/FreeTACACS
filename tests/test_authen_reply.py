@@ -36,3 +36,107 @@ class TestAuthenReply:
         pkt = AuthenReply(header, raw.read(), 'test')
 
         assert isinstance(pkt, AuthenReply)
+
+
+    def test_invalid_status(self):
+        """Test we handle passing a invalid status field type"""
+
+        # Configure the header
+        header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
+                         'session_id': 2620865572, 'length': 40})
+
+        fields = {
+                   'status': 'invalid',
+                   'flags': 0,
+                   'server_msg': 'test',
+                   'data': 'test',
+                }
+
+        with pytest.raises(ValueError) as e:
+            AuthenReply(header, fields=fields, secret='test')
+
+        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
+                               ' arguments status and flags must be integers'
+
+
+    def test_invalid_flags(self):
+        """Test we handle passing a invalid flags field type"""
+
+        # Configure the header
+        header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
+                         'session_id': 2620865572, 'length': 40})
+
+        fields = {
+                   'status': 0,
+                   'flags': 'invalid',
+                   'server_msg': 'test',
+                   'data': 'test',
+                }
+
+        with pytest.raises(ValueError) as e:
+            AuthenReply(header, fields=fields, secret='test')
+
+        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
+                               ' arguments status and flags must be integers'
+
+
+    def test_invalid_server_msg(self):
+        """Test we handle passing a invalid server_msg field type"""
+
+        # Configure the header
+        header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
+                         'session_id': 2620865572, 'length': 40})
+
+        fields = {
+                   'status': 0,
+                   'flags': 0,
+                   'server_msg': 0,
+                   'data': 'test',
+                }
+
+        with pytest.raises(ValueError) as e:
+            AuthenReply(header, fields=fields, secret='test')
+
+        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
+                               ' arguments server_msg and data must be strings'
+
+
+    def test_invalid_data(self):
+        """Test we handle passing a invalid data field type"""
+
+        # Configure the header
+        header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
+                         'session_id': 2620865572, 'length': 40})
+
+        fields = {
+                   'status': 0,
+                   'flags': 0,
+                   'server_msg': 'test',
+                   'data': 0,
+                }
+
+        with pytest.raises(ValueError) as e:
+            AuthenReply(header, fields=fields, secret='test')
+
+        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
+                               ' arguments server_msg and data must be strings'
+
+
+    def test_create_instance_with_fields(self):
+        """Test we can create an instance from TACACSPlusAuthenReply class"""
+
+        # Configure the header
+        header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
+                         'session_id': 2620865572, 'length': 40})
+
+        fields = {
+                   'status': 0,
+                   'flags': 0,
+                   'server_msg': 'test',
+                   'data': 'test',
+                }
+
+        pkt = AuthenReply(header, fields=fields, secret='test')
+
+        assert isinstance(pkt, AuthenReply)
+

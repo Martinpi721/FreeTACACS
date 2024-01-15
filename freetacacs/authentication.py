@@ -105,6 +105,7 @@ class TACACSPlusAuthenReply(Packet):
           secret(str): client/server shared secret
         Exceptions:
           TypeError
+          ValueError
         Returns:
           None
         """
@@ -138,9 +139,23 @@ class TACACSPlusAuthenReply(Packet):
             raise TypeError(msg) from e
 
         # Build packet structure
-        self._body = struct.pack('BB', self._status, self._flags)
-        self._body += struct.pack('!HH', len(self._server_msg), len(self._data))
+        try:
+            # B = unsigned char
+            self._body = struct.pack('BB', self._status, self._flags)
+            # !H = network-order (big-endian) unsigned short
+            self._body += struct.pack('!HH', len(self._server_msg), len(self._data))
 
-        for value in (self._server_msg, self._data):
-            self._body += struct.pack('%ds' % len(value), value)
+            # Byte encode
+            server_msg = six.b(self._server_msg)
+            data = six.b(self._data)
+
+            # s = char[]
+            for value in (server_msg, data):
+                self._body += struct.pack('%ds' % len(value), value)
+        except struct.error as e:
+            raise ValueError('Unable to encode AuthenReply packet. Required' \
+                             ' arguments status and flags must be integers') from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AuthenReply packet. Required' \
+                             ' arguments server_msg and data must be strings') from e
 
