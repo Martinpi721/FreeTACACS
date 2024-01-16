@@ -1,3 +1,13 @@
+"""
+Module provides unit tests for the Authentication Start class
+
+Classes:
+    TestAuthenStart
+
+Functions:
+    None
+"""
+
 import six
 import pytest
 
@@ -7,6 +17,8 @@ from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStart
 
 class TestAuthenStart:
+    """Test class for testing the Authentication Start class"""
+
     def test_create_instance(self):
         """Test we can create a instance of TACACSPlusAuthenStart class"""
 
@@ -95,4 +107,3 @@ class TestAuthenStart:
 
         assert str(e.value) == 'Unable to decode AuthenSTART packet. TACACS+' \
                                ' client/server shared key probably does not match'
-

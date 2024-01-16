@@ -7,6 +7,7 @@ Classes:
 Functions:
     None
 """
+
 import six
 
 # Import code to be tested

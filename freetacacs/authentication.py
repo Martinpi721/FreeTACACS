@@ -10,6 +10,7 @@ Functions:
 """
 import struct
 import logging
+from dataclasses import dataclass
 import six
 
 # Local imports
@@ -17,6 +18,15 @@ from freetacacs import flags
 from freetacacs.packet import TACACSPlusPacket as Packet
 
 log = logging.getLogger(__name__)
+
+@dataclass
+class ReplyPacketFields:
+    """Defines Authentication Reply fields required to create a Reply packet"""
+    status: int
+    flags: int
+    server_msg: str
+    data: str
+
 
 class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
@@ -98,10 +108,7 @@ class TACACSPlusAuthenReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields={'status': 0,
-                         'flags': 0,
-                         'server_msg': '',
-                         'data': ''}, secret=None):
+                 fields=ReplyPacketFields(0, 0, '', ''), secret=None):
         """Initialise a TACAS+ Authentication REPLY packet body
 
         Initialise a TACACS+ Authentication REPLY packet. This can be done by
@@ -114,7 +121,7 @@ class TACACSPlusAuthenReply(Packet):
         Args:
           header(obj): instance of a TACACSPlusHeader class
           body(bytes): byte encoded TACACS+ packet body
-          fields(dict): fields used to create packet body
+          fields(dataclass): fields used to create packet body
           secret(str): client/server shared secret
         Exceptions:
           TypeError
@@ -143,13 +150,12 @@ class TACACSPlusAuthenReply(Packet):
         # If fields dict doesn't contain these keys then we are decoding a REPLY
         # rather than building a REPLY packet
         try:
-            self._status = fields['status']
-            self._flags = fields['flags']
-            self._server_msg = fields['server_msg']
-            self._data = fields['data']
-        except KeyError as e:
-            msg = '__init__() requires either a byte encoded body or dictionary of fields'
-            raise TypeError(msg) from e
+            self._status = fields.status
+            self._flags = fields.flags
+            self._server_msg = fields.server_msg
+            self._data = fields.data
+        except TypeError as e:
+            raise
 
         # Build packet structure
         try:
@@ -164,7 +170,7 @@ class TACACSPlusAuthenReply(Packet):
 
             # s = char[]
             for value in (server_msg, data):
-                self._body += struct.pack('%ds' % len(value), value)
+                self._body += struct.pack(f'{len(value)}s', value)
         except struct.error as e:
             raise ValueError('Unable to encode AuthenReply packet. Required' \
                              ' arguments status and flags must be integers') from e

@@ -1,14 +1,34 @@
-import six
+"""
+Module implements the TACACS+ header class
+
+Classes:
+    TACACSPlusHeader
+
+Functions:
+    None
+"""
+
 import struct
-from twisted.logger import Logger
+import logging
+from dataclasses import dataclass
+import six
 
 # Local imports
 from freetacacs.flags import TAC_PLUS_PACKET_TYPES
 
+log = logging.getLogger(__name__)
+
+@dataclass
+class HeaderFields:
+    """Defines TACACS+ header fields required to create packets"""
+    version: int
+    packet_type: int
+    flags: str
+    session_id: str
+
+
 class TACACSPlusHeader:
     """Class to hand encoding/decoding the headers of TACACS+ packets"""
-
-    log = Logger()
 
     def __init__(self, fields, sequence_no=1, flags=0):
         """Initialise the packet object
@@ -150,7 +170,7 @@ class TACACSPlusHeader:
           fields(dict): containing header field name/value pairs
         """
 
-        fields = dict()
+        fields = {}
 
         try:
             raw = six.BytesIO(encoded_header)
@@ -194,12 +214,8 @@ class TACACSPlusHeader:
         packet_type = list(result)[0][0]
 
         # Build the string representation
-        packet = 'version: {0}, type: {1}, session_id: {2}, length: {3},' \
-                  ' sequence_no: {4}, flags: {5}'.format(self._version,
-                                                         packet_type,
-                                                         self._session_id,
-                                                         self._length,
-                                                         self._sequence_no,
-                                                         self._flags)
-        return packet
+        packet = f'version: {self._version}, type: {packet_type},' \
+                 f' session_id: {self._session_id}, length: {self._length},' \
+                 f' sequence_no: {self._sequence_no}, flags: {self._flags}'
 
+        return packet

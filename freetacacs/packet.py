@@ -1,7 +1,17 @@
-import six
+"""
+Module implements the base TACACS+ packet class
+
+Classes:
+    TACACSPlusPacket
+
+Functions:
+    None
+"""
+
 import struct
 import logging
 from hashlib import md5
+import six
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +65,7 @@ class TACACSPlusPacket:
           obfuscated_body(struct): Obfuscated packet body
         """
 
-        packet_body = list()
+        packet_body = []
         body_length = len(self._body)
 
         # Generate the MD5 hash from header fields and shared secret
@@ -83,4 +93,3 @@ class TACACSPlusPacket:
         obfuscated_body = struct.pack('B' * len(packet_body), *packet_body)
 
         return obfuscated_body
-

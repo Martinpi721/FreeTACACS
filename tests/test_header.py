@@ -1,5 +1,15 @@
-import pytest
+"""
+Module provides unit tests for the header module
+
+Classes:
+    TestTACACSPlusHeader
+
+Functions:
+    None
+"""
+
 import struct
+import pytest
 
 # Import code to be tested
 from freetacacs import flags
@@ -8,6 +18,8 @@ from freetacacs.header import TACACSPlusHeader as Header
 # Import exceptions
 
 class TestTACACSPlusHeader:
+    """Test class for testing the header module"""
+
     def test_create_instance(self):
         """Test we can create a instance of TACACSPlusHeader class"""
 
@@ -111,11 +123,11 @@ class TestTACACSPlusHeader:
         """Test we can handle a invalid version no."""
 
         with pytest.raises(struct.error) as e:
-            header = Header({'version': 'v0.1',
-                             'packet_type': 0x01,
-                             'session_id': 0x01,
-                             'length': 1,
-                           })
+            Header({'version': 'v0.1',
+                    'packet_type': 0x01,
+                    'session_id': 0x01,
+                    'length': 1,
+                  })
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -124,11 +136,11 @@ class TestTACACSPlusHeader:
         """Test we can handle a invalid packet type"""
 
         with pytest.raises(struct.error) as e:
-            header = Header({'version': 0x01,
-                             'packet_type': 'auth',
-                             'session_id': 0x01,
-                             'length': 1,
-                           })
+            Header({'version': 0x01,
+                    'packet_type': 'auth',
+                    'session_id': 0x01,
+                    'length': 1,
+                  })
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -137,11 +149,11 @@ class TestTACACSPlusHeader:
         """Test we can handle a invalid session id"""
 
         with pytest.raises(struct.error) as e:
-            header = Header({'version': 0x01,
-                             'packet_type': 0x01,
-                             'session_id': '1',
-                             'length': 1,
-                           })
+            Header({'version': 0x01,
+                    'packet_type': 0x01,
+                    'session_id': '1',
+                    'length': 1,
+                  })
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -150,11 +162,11 @@ class TestTACACSPlusHeader:
         """Test we can handle a invalid length"""
 
         with pytest.raises(struct.error) as e:
-            header = Header({'version': 0x01,
-                             'packet_type': 0x01,
-                             'session_id': 0x01,
-                             'length': '1',
-                           })
+            Header({'version': 0x01,
+                    'packet_type': 0x01,
+                    'session_id': 0x01,
+                    'length': '1',
+                  })
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -279,5 +291,3 @@ class TestTACACSPlusHeader:
                        })
 
         assert header.version == 1
-
-

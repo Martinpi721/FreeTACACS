@@ -1,12 +1,25 @@
+"""
+Module provides unit tests for the Authentication Reply class
+
+Classes:
+    TestAuthenReply
+
+Functions:
+    None
+"""
+
 import six
 import pytest
 
 # Import code to be tested
 from freetacacs import flags
 from freetacacs.header import TACACSPlusHeader as Header
+from freetacacs.authentication import ReplyPacketFields
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReply
 
 class TestAuthenReply:
+    """Test class for testing the Authentication Reply class"""
+
     def test_create_instance_without_body_nor_fields(self):
         """Test we handle failure to pass either body for fields"""
 
@@ -15,10 +28,11 @@ class TestAuthenReply:
                          'session_id': 2620865572, 'length': 40})
 
         with pytest.raises(TypeError) as e:
-            AuthenReply(header, fields=dict(), secret='test')
+            AuthenReply(header, fields=ReplyPacketFields(), secret='test')
 
-        assert str(e.value) == '__init__() requires either a byte encoded body' \
-                               ' or dictionary of fields'
+        assert str(e.value) == "__init__() missing 4 required positional" \
+                               " arguments: 'status', 'flags', 'server_msg'," \
+                               " and 'data'"
 
 
     def test_create_instance_with_body(self):
@@ -45,13 +59,7 @@ class TestAuthenReply:
         header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
                          'session_id': 2620865572, 'length': 40})
 
-        fields = {
-                   'status': 'invalid',
-                   'flags': 0,
-                   'server_msg': 'test',
-                   'data': 'test',
-                }
-
+        fields = ReplyPacketFields('invalid', 0, 'test', 'test')
         with pytest.raises(ValueError) as e:
             AuthenReply(header, fields=fields, secret='test')
 
@@ -66,13 +74,7 @@ class TestAuthenReply:
         header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
                          'session_id': 2620865572, 'length': 40})
 
-        fields = {
-                   'status': 0,
-                   'flags': 'invalid',
-                   'server_msg': 'test',
-                   'data': 'test',
-                }
-
+        fields = ReplyPacketFields(0, 'invalid', 'test', 'test')
         with pytest.raises(ValueError) as e:
             AuthenReply(header, fields=fields, secret='test')
 
@@ -87,13 +89,7 @@ class TestAuthenReply:
         header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
                          'session_id': 2620865572, 'length': 40})
 
-        fields = {
-                   'status': 0,
-                   'flags': 0,
-                   'server_msg': 0,
-                   'data': 'test',
-                }
-
+        fields = ReplyPacketFields(0, 0, 0, 'test')
         with pytest.raises(ValueError) as e:
             AuthenReply(header, fields=fields, secret='test')
 
@@ -108,13 +104,7 @@ class TestAuthenReply:
         header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
                          'session_id': 2620865572, 'length': 40})
 
-        fields = {
-                   'status': 0,
-                   'flags': 0,
-                   'server_msg': 'test',
-                   'data': 0,
-                }
-
+        fields = ReplyPacketFields(0, 0, 'test', 0)
         with pytest.raises(ValueError) as e:
             AuthenReply(header, fields=fields, secret='test')
 
@@ -129,14 +119,7 @@ class TestAuthenReply:
         header = Header({'version': 193, 'packet_type': flags.TAC_PLUS_AUTHEN,
                          'session_id': 2620865572, 'length': 40})
 
-        fields = {
-                   'status': 0,
-                   'flags': 0,
-                   'server_msg': 'test',
-                   'data': 'test',
-                }
-
+        fields = ReplyPacketFields(0, 0, 'test', 'test')
         pkt = AuthenReply(header, fields=fields, secret='test')
 
         assert isinstance(pkt, AuthenReply)
-
