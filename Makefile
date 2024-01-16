@@ -1,4 +1,4 @@
-.PHONY: init test clean run
+.PHONY: init test clean run lint
 VENV_DIR=./venv
 
 init:
@@ -15,3 +15,7 @@ clean:
 run: init
 	$(VENV_DIR)/bin/python -m freetacacs.factory
 
+lint: init
+	$(VENV_DIR)/bin/pip3 install pylint
+	$(VENV_DIR)/bin/pylint freetacacs || return 0
+	$(VENV_DIR)/bin/pylint tests || return 0
