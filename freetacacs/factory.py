@@ -12,20 +12,22 @@ from twisted.internet import protocol, reactor
 import six
 
 # Local imports
-from freetacacs.flags import (TAC_PLUS_AUTHEN, TAC_PLUS_AUTHOR, TAC_PLUS_ACCT)
+from freetacacs import flags
+from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
+from freetacacs.authentication import ReplyPacketFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStart
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReply
 
 class TACACSPlusProtocol(protocol.Protocol):
     """Define the TACACS+ protocol"""
 
-    def _authentication(self, header, body):
+    def _authentication(self, rx_header, rx_body):
         """Process authentication packets
 
         Args:
-          header(dict): header fields
-          body(byte): packet body
+          rx_header(dict): header fields
+          rx_body(byte): packet body
         Exceptions:
           None
         Returns:
@@ -33,18 +35,32 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         # Determine the type of packet to process
-        if header['sequence_no'] == 1:
+        # AuthenSTART
+        if rx_header.sequence_no == 1:
             print('authen start')
+            seq_no = rx_header.sequence_no + 1
+            tx_header = Header(HeaderFields(rx_header.version,
+                                            flags.TAC_PLUS_AUTHEN,
+                                            rx_header.session_id, 0), seq_no)
+
+            fields = ReplyPacketFields(flags.TAC_PLUS_AUTHEN_STATUS_GETPASS,
+                                       flags.TAC_PLUS_REPLY_FLAG_NOECHO,
+                                       'test', 'test')
+
+            reply = AuthenReply(tx_header, fields=fields, secret='test')
+            self.transport.write(bytes(reply))
+
+        # AuthenCONTINUE
         else:
             print('authen continue')
 
 
-    def _authorisation(self, header, body):
+    def _authorisation(self, rx_header, rx_body):
         """Process authorisation packets
 
         Args:
-          header(dict): header fields
-          body(byte): packet body
+          rx_header(dict): header fields
+          rx_body(byte): packet body
         Exceptions:
           None
         Returns:
@@ -52,18 +68,18 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         # Determine the type of packet to process
-        if header['sequence_no'] == 1:
+        if rx_header.sequence_no == 1:
             print('author request')
         else:
             print('author response')
 
 
-    def _accounting(self, header, body):
+    def _accounting(self, rx_header, rx_body):
         """Process accounting packets
 
         Args:
-          header(dict): header fields
-          body(byte): packet body
+          rx_header(dict): header fields
+          rx_body(byte): packet body
         Exceptions:
           None
         Returns:
@@ -71,7 +87,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         # Determine the type of packet to process
-        if header['sequence_no'] == 1:
+        if rx_header.sequence_no == 1:
             print('acct request')
         else:
             print('acct response')
@@ -90,16 +106,16 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         # Decode the TACACS+ packet header
         raw = six.BytesIO(data)
-        header = Header.decode(raw.read(12))
+        rx_header = Header.decode(raw.read(12))
 
         # Determine how we decode the actual packet
-        if header['packet_type'] == TAC_PLUS_AUTHEN:
-            self._authentication(header, raw.read())
+        if rx_header.packet_type == flags.TAC_PLUS_AUTHEN:
+            self._authentication(rx_header, raw.read())
 
-        elif header['packet_type'] == TAC_PLUS_AUTHOR:
+        elif rx_header.packet_type == flags.TAC_PLUS_AUTHOR:
             self._authorisation(header, raw.read())
 
-        elif header['packet_type'] == TAC_PLUS_ACCT:
+        elif rx_header.packet_type == flags.TAC_PLUS_ACCT:
             self._accounting(header, raw.read())
         else:
             print('Unknown packet type')
@@ -112,6 +128,7 @@ class TACACSPlusFactory(protocol.Factory):
 
     def getUser(self, user):
         return b"No such user"
+
 
 if __name__ == "__main__":
     reactor.listenTCP(4949, TACACSPlusFactory())
