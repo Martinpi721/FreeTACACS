@@ -154,7 +154,7 @@ class TACACSPlusAuthenReply(Packet):
             self._flags = fields.flags
             self._server_msg = fields.server_msg
             self._data = fields.data
-        except TypeError as e:
+        except TypeError:
             raise
 
         # Build packet structure
