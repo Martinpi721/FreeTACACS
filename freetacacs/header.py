@@ -20,11 +20,18 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class HeaderFields:
-    """Defines TACACS+ header fields required to create packets"""
+    """TACACS+ header fields required to create packets"""
     version: int
     packet_type: int
     session_id: str
     length: int
+
+
+@dataclass
+class Fields(HeaderFields):
+    """TACACS+ header fields decoded"""
+    sequence_no: int
+    flags: int
 
 
 class TACACSPlusHeader:
@@ -166,10 +173,8 @@ class TACACSPlusHeader:
         Exceptions:
           ValueError
         Returns:
-          fields(dict): containing header field name/value pairs
+          header(obj): instance of HeaderFields dataclass
         """
-
-        fields = {}
 
         try:
             raw = six.BytesIO(encoded_header)
@@ -179,19 +184,20 @@ class TACACSPlusHeader:
                              ' byte-like object') from e
 
         try:
-            (fields['version'],
-            fields['packet_type'],
-            fields['sequence_no'],
-            fields['flags']) = struct.unpack('BBBB', # B = unsigned char
-                                             raw_chars)
+            (version,
+            packet_type,
+            sequence_no,
+            flags) = struct.unpack('BBBB', # B = unsigned char
+                                   raw_chars)
 
             # !I = network-order (big-endian) unsigned int
-            fields['session_id'], fields['length'] = struct.unpack('!II', raw.read(8))
+            session_id, length = struct.unpack('!II', raw.read(8))
+
+            header = Fields(version, packet_type, session_id, length, sequence_no, flags)
         except struct.error as e:
             raise ValueError('Unable to extract header. TACACS+ client/server' \
                              ' shared key probably does not match') from e
-
-        return fields
+        return header
 
 
     def __str__(self):

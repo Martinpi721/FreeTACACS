@@ -184,12 +184,12 @@ class TestTACACSPlusHeader:
         encoded_header = b'\x01\x01\x01\x00\x00\x00\x00\x01\x00\x00\x00\x01'
         fields = Header.decode(encoded_header)
 
-        assert fields['version'] == 1
-        assert fields['packet_type'] == 1
-        assert fields['session_id'] == 1
-        assert fields['length'] == 1
-        assert fields['sequence_no'] == 1
-        assert fields['flags'] == 0
+        assert fields.version == 1
+        assert fields.packet_type == 1
+        assert fields.session_id == 1
+        assert fields.length == 1
+        assert fields.sequence_no == 1
+        assert fields.flags == 0
 
 
     def test_decode_header_with_invalid_bytes(self):
