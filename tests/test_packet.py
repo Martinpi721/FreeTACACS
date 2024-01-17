@@ -77,3 +77,23 @@ class TestTACACSPlusPacket:
         pkt = Packet(header, raw.read(), 'test')
 
         assert pkt.obfuscate == b"\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
+
+
+    def test_length_of_packet_body(self):
+        """Test we can get the length packet bodies"""
+
+        raw_plain_body = b'\x01\x00\x02\x01\x04\x0b\r\x04testpython_tty0python_devicetest'
+
+        version = 193
+        packet_type = TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        # Convert packet to a byte-stream and create Authentication start instance
+        raw = six.BytesIO(raw_plain_body)
+        pkt = Packet(header, raw.read(), 'test')
+
+        assert pkt.length == 40

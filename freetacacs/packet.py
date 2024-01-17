@@ -39,6 +39,21 @@ class TACACSPlusPacket:
 
 
     @property
+    def length(self):
+        """Return the length of the packet body
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          length(int): length of packet body
+        """
+
+        return len(self._body)
+
+
+    @property
     def deobfuscate(self):
         """Deobfuscate the packet body
 
