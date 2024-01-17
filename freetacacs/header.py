@@ -23,8 +23,8 @@ class HeaderFields:
     """Defines TACACS+ header fields required to create packets"""
     version: int
     packet_type: int
-    flags: str
     session_id: str
+    length: int
 
 
 class TACACSPlusHeader:
@@ -34,8 +34,7 @@ class TACACSPlusHeader:
         """Initialise the packet object
 
         Args:
-          fields(dict): containing the following header fields (version,
-                        packet_type, sequence_no, flags, session_id and length)
+          fields(obj): instance of HeaderFields dataclass
           sequence_no(int): containing the packet sequence number
           flags(int): containing the TACACS+ flags
         Exceptions:
@@ -58,12 +57,12 @@ class TACACSPlusHeader:
         # |                              length                               |
         # +----------------+----------------+----------------+----------------+
 
-        self._version = fields['version']
-        self._packet_type = fields['packet_type']
+        self._version = fields.version
+        self._packet_type = fields.packet_type
         self._sequence_no = sequence_no
         self._flags = flags
-        self._session_id = fields['session_id']
-        self._length = fields['length']
+        self._session_id = fields.session_id
+        self._length = fields.length
 
         # Build header structure
         try:

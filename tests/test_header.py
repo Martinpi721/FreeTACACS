@@ -13,6 +13,7 @@ import pytest
 
 # Import code to be tested
 from freetacacs import flags
+from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 
 # Import exceptions
@@ -23,11 +24,11 @@ class TestTACACSPlusHeader:
     def test_create_instance(self):
         """Test we can create a instance of TACACSPlusHeader class"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': 0x01,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         assert isinstance(header, Header)
         assert header.encoded == b'\x01\x01\x01\x00\x00\x00\x00\x01\x00\x00\x00\x01'
@@ -38,11 +39,11 @@ class TestTACACSPlusHeader:
     def test_packet_type_lookups_authen(self):
         """Test we can create a header with TAC_PLUS_AUTHEN packet types"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHEN,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         assert header.encoded == b'\x01\x01\x01\x00\x00\x00\x00\x01\x00\x00\x00\x01'
         assert str(header) == 'version: 1, type: TAC_PLUS_AUTHEN, session_id: 1,' \
@@ -52,11 +53,11 @@ class TestTACACSPlusHeader:
     def test_packet_type_lookups_author(self):
         """Test we can create a header with TAC_PLUS_AUTHOR packet types"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHOR,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         assert header.encoded == b'\x01\x02\x01\x00\x00\x00\x00\x01\x00\x00\x00\x01'
         assert str(header) == 'version: 1, type: TAC_PLUS_AUTHOR, session_id: 1,' \
@@ -66,11 +67,11 @@ class TestTACACSPlusHeader:
     def test_packet_type_lookups_acct(self):
         """Test we can create a header with TAC_PLUS_ACCT packet types"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         assert header.encoded == b'\x01\x03\x01\x00\x00\x00\x00\x01\x00\x00\x00\x01'
         assert str(header) == 'version: 1, type: TAC_PLUS_ACCT, session_id: 1,' \
@@ -80,11 +81,11 @@ class TestTACACSPlusHeader:
     def test_realistic_header_information(self):
         """Test we can create a header with TAC_PLUS_AUTHEN packet types"""
 
-        header = Header({'version': 193,
-                         'packet_type': flags.TAC_PLUS_AUTHEN,
-                         'session_id': 1087845697,
-                         'length': 40,
-                       })
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 1087845697
+        length = 40
+        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         assert header.encoded == b'\xc1\x01\x01\x00@\xd75A\x00\x00\x00('
         assert str(header) == 'version: 193, type: TAC_PLUS_AUTHEN, session_id: 1087845697,' \
@@ -94,11 +95,12 @@ class TestTACACSPlusHeader:
     def test_set_sequence_no(self):
         """Test we can create a header with custom sequence_no"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHEN,
-                         'session_id': 0x01,
-                         'length': 1,
-                       }, sequence_no=22)
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length),
+                        sequence_no=22)
 
         assert header.encoded == b'\x01\x01\x16\x00\x00\x00\x00\x01\x00\x00\x00\x01'
         assert str(header) == 'version: 1, type: TAC_PLUS_AUTHEN, session_id: 1,' \
@@ -108,11 +110,12 @@ class TestTACACSPlusHeader:
     def test_set_flags(self):
         """Test we can create a header with custom flags set"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHEN,
-                         'session_id': 0x01,
-                         'length': 1,
-                       }, flags=flags.TAC_PLUS_UNENCRYPTED_FLAG)
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        header = Header(HeaderFields(version, packet_type, session_id, length),
+                       flags=flags.TAC_PLUS_UNENCRYPTED_FLAG)
 
         assert header.encoded == b'\x01\x01\x01\x01\x00\x00\x00\x01\x00\x00\x00\x01'
         assert str(header) == 'version: 1, type: TAC_PLUS_AUTHEN, session_id: 1,' \
@@ -122,12 +125,13 @@ class TestTACACSPlusHeader:
     def test_create_instance_invalid_version(self):
         """Test we can handle a invalid version no."""
 
+        version = 'v0.1'
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+
         with pytest.raises(struct.error) as e:
-            Header({'version': 'v0.1',
-                    'packet_type': 0x01,
-                    'session_id': 0x01,
-                    'length': 1,
-                  })
+            Header(HeaderFields(version, packet_type, session_id, length))
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -135,12 +139,13 @@ class TestTACACSPlusHeader:
     def test_create_instance_invalid_packet_type(self):
         """Test we can handle a invalid packet type"""
 
+        version = 0x01
+        packet_type = 'auth'
+        session_id = 0x01
+        length = 1
+
         with pytest.raises(struct.error) as e:
-            Header({'version': 0x01,
-                    'packet_type': 'auth',
-                    'session_id': 0x01,
-                    'length': 1,
-                  })
+            Header(HeaderFields(version, packet_type, session_id, length))
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -148,12 +153,13 @@ class TestTACACSPlusHeader:
     def test_create_instance_invalid_session_id(self):
         """Test we can handle a invalid session id"""
 
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = '1'
+        length = 1
+
         with pytest.raises(struct.error) as e:
-            Header({'version': 0x01,
-                    'packet_type': 0x01,
-                    'session_id': '1',
-                    'length': 1,
-                  })
+            Header(HeaderFields(version, packet_type, session_id, length))
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -161,12 +167,13 @@ class TestTACACSPlusHeader:
     def test_create_instance_invalid_length(self):
         """Test we can handle a invalid length"""
 
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = '1'
+
         with pytest.raises(struct.error) as e:
-            Header({'version': 0x01,
-                    'packet_type': 0x01,
-                    'session_id': 0x01,
-                    'length': '1',
-                  })
+            Header(HeaderFields(version, packet_type, session_id, length))
 
         assert str(e.value) == 'All TACACS+ header fields must be integers'
 
@@ -212,82 +219,83 @@ class TestTACACSPlusHeader:
     def test_get_packet_type_authen(self):
         """Test we can find the authentication packet type from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHEN,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.packet_type == 'TAC_PLUS_AUTHEN'
 
 
     def test_get_packet_type_author(self):
         """Test we can find the authorisation packet type from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_AUTHOR,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 0x01
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.packet_type == 'TAC_PLUS_AUTHOR'
 
 
     def test_get_packet_type_acct(self):
         """Test we can find the accounting packet type from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.packet_type == 'TAC_PLUS_ACCT'
 
 
     def test_get_default_sequence_no(self):
         """Test we can find the default sequence no from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 0x01,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.sequence_no == 1
 
 
     def test_get_sequence_no(self):
         """Test we can find the a sequence no from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 0x01,
-                         'length': 1,
-                       }, sequence_no=123)
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length),
+                        sequence_no=123)
         assert header.sequence_no == 123
 
 
     def test_get_session_id(self):
         """Test we can find the a session id from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 123,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.session_id == 123
 
 
     def test_get_version(self):
         """Test we can find the a protocol version from a TACACSPlusHeader instance"""
 
-        header = Header({'version': 0x01,
-                         'packet_type': flags.TAC_PLUS_ACCT,
-                         'session_id': 123,
-                         'length': 1,
-                       })
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
 
+        header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.version == 1
