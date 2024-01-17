@@ -87,6 +87,26 @@ class TACACSPlusHeader:
 
 
     @property
+    def length(self):
+        """All the body lentgh to TACACS+ packet header
+
+        Args:
+          length(int): length of the TACACS+ body
+        Exceptions:
+          None
+        Returns:
+          length(int): length of the TACACS+ body
+        """
+
+        return self._length
+
+
+    @length.setter
+    def length(self, length):
+        self._length = length
+
+
+    @property
     def sequence_no(self):
         """Return the sequence no from a TACACS+ packet header
 

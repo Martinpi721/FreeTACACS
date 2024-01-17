@@ -299,3 +299,17 @@ class TestTACACSPlusHeader:
 
         header = Header(HeaderFields(version, packet_type, session_id, length))
         assert header.version == 1
+
+
+    def test_set_body_length(self):
+        """Test we can set the body length in a TACACSPlusHeader instance"""
+
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
+
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header.length = 20
+
+        assert header.length == 20
