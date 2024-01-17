@@ -177,4 +177,8 @@ class TACACSPlusAuthenReply(Packet):
         except TypeError as e:
             raise ValueError('Unable to encode AuthenReply packet. Required' \
                              ' arguments server_msg and data must be strings') from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
         return None

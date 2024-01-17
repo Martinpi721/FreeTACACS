@@ -28,7 +28,7 @@ class TestAuthenStart:
         version = 193
         packet_type = flags.TAC_PLUS_AUTHEN
         session_id = 2620865572
-        length = 40
+        length = 0
 
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
@@ -49,7 +49,7 @@ class TestAuthenStart:
         assert fields['port'] == b'python_tty0'
         assert fields['remote_address'] == b'python_device'
         assert fields['data'] == b'test'
-
+        assert pkt.length == 40
 
     def test_incorrect_session_id(self):
         """Test we can handle a invalid session id"""
