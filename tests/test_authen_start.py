@@ -15,7 +15,8 @@ import pytest
 from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
-from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStart
+from freetacacs.authentication import AuthenStartFields
+from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 
 class TestAuthenStart:
     """Test class for testing the Authentication Start class"""
@@ -36,20 +37,21 @@ class TestAuthenStart:
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
         raw.seek(12)
-        pkt = AuthenStart(header, raw.read(), 'test')
+        pkt = AuthenStartPacket(header, raw.read(), 'test')
 
         fields = pkt.decode
 
-        assert isinstance(pkt, AuthenStart)
-        assert fields['action'] == 'TAC_PLUS_AUTHEN_LOGIN'
-        assert fields['priv_lvl'] == 'TAC_PLUS_PRIV_LVL_MIN'
-        assert fields['authen_type'] == 'TAC_PLUS_AUTHEN_TYPE_PAP'
-        assert fields['service'] == 'TAC_PLUS_AUTHEN_SVC_LOGIN'
-        assert fields['user'] == b'test'
-        assert fields['port'] == b'python_tty0'
-        assert fields['remote_address'] == b'python_device'
-        assert fields['data'] == b'test'
+        assert isinstance(pkt, AuthenStartPacket)
+        assert fields.action == 'TAC_PLUS_AUTHEN_LOGIN'
+        assert fields.priv_lvl == 'TAC_PLUS_PRIV_LVL_MIN'
+        assert fields.authen_type == 'TAC_PLUS_AUTHEN_TYPE_PAP'
+        assert fields.service == 'TAC_PLUS_AUTHEN_SVC_LOGIN'
+        assert fields.user == 'test'
+        assert fields.port == 'python_tty0'
+        assert fields.remote_address == 'python_device'
+        assert fields.data == 'test'
         assert pkt.length == 40
+
 
     def test_incorrect_session_id(self):
         """Test we can handle a invalid session id"""
@@ -67,7 +69,7 @@ class TestAuthenStart:
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
         raw.seek(12)
-        pkt = AuthenStart(header, raw.read(), 'test')
+        pkt = AuthenStartPacket(header, raw.read(), 'test')
 
         with pytest.raises(ValueError) as e:
             pkt.decode
@@ -92,7 +94,7 @@ class TestAuthenStart:
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
         raw.seek(12)
-        pkt = AuthenStart(header, raw.read(), 'incorrect')
+        pkt = AuthenStartPacket(header, raw.read(), 'incorrect')
 
         with pytest.raises(ValueError) as e:
             pkt.decode
@@ -117,7 +119,7 @@ class TestAuthenStart:
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
         raw.seek(12)
-        pkt = AuthenStart(header, raw.read())
+        pkt = AuthenStartPacket(header, raw.read())
 
         with pytest.raises(ValueError) as e:
             pkt.decode

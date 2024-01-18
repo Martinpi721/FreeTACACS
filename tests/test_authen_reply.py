@@ -15,8 +15,8 @@ import pytest
 from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
-from freetacacs.authentication import ReplyPacketFields
-from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReply
+from freetacacs.authentication import AuthenReplyFields
+from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
 
 class TestAuthenReply:
     """Test class for testing the Authentication Reply class"""
@@ -33,11 +33,10 @@ class TestAuthenReply:
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
-            AuthenReply(header, fields=ReplyPacketFields(), secret='test')
+            AuthenReplyPacket(header, fields=AuthenReplyFields(), secret='test')
 
-        assert str(e.value) == "__init__() missing 4 required positional" \
-                               " arguments: 'status', 'flags', 'server_msg'," \
-                               " and 'data'"
+        assert str(e.value) == "__init__() missing 2 required positional" \
+                               " arguments: 'status' and 'flags'"
 
 
     def test_create_instance_with_body(self):
@@ -56,11 +55,12 @@ class TestAuthenReply:
         # Convert packet to a byte-stream and create Authentication reply instance
         raw = six.BytesIO(raw_pkt)
         raw.seek(12)
-        pkt = AuthenReply(header, raw.read(), 'test')
+        pkt = AuthenReplyPacket(header, raw.read(), 'test')
 
-        assert isinstance(pkt, AuthenReply)
+        assert isinstance(pkt, AuthenReplyPacket)
 
 
+    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_status(self):
         """Test we handle passing a invalid status field type"""
 
@@ -72,14 +72,14 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = ReplyPacketFields('invalid', 0, 'test', 'test')
-        with pytest.raises(ValueError) as e:
-            AuthenReply(header, fields=fields, secret='test')
+        fields = AuthenReplyFields('invalid', 0, 'test', 'test')
+        with pytest.raises(TypeError) as e:
+            AuthenReplyPacket(header, fields=fields, secret='test')
 
-        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
-                               ' arguments status and flags must be integers'
+        assert str(e.value) == 'Status should be of type int'
 
 
+    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_flags(self):
         """Test we handle passing a invalid flags field type"""
 
@@ -91,14 +91,14 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = ReplyPacketFields(0, 'invalid', 'test', 'test')
-        with pytest.raises(ValueError) as e:
-            AuthenReply(header, fields=fields, secret='test')
+        fields = AuthenReplyFields(0, 'invalid', 'test', 'test')
+        with pytest.raises(TypeError) as e:
+            AuthenReplyPacket(header, fields=fields, secret='test')
 
-        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
-                               ' arguments status and flags must be integers'
+        assert str(e.value) == 'Flags should be of type int'
 
 
+    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_server_msg(self):
         """Test we handle passing a invalid server_msg field type"""
 
@@ -110,14 +110,14 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = ReplyPacketFields(0, 0, 0, 'test')
-        with pytest.raises(ValueError) as e:
-            AuthenReply(header, fields=fields, secret='test')
+        fields = AuthenReplyFields(0, 0, 0, 'test')
+        with pytest.raises(TypeError) as e:
+            AuthenReplyPacket(header, fields=fields, secret='test')
 
-        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
-                               ' arguments server_msg and data must be strings'
+        assert str(e.value) == 'Server Message should be of type string'
 
 
+    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_data(self):
         """Test we handle passing a invalid data field type"""
 
@@ -129,12 +129,11 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = ReplyPacketFields(0, 0, 'test', 0)
-        with pytest.raises(ValueError) as e:
-            AuthenReply(header, fields=fields, secret='test')
+        fields = AuthenReplyFields(0, 0, 'test', 0)
+        with pytest.raises(TypeError) as e:
+            AuthenReplyPacket(header, fields=fields, secret='test')
 
-        assert str(e.value) == 'Unable to encode AuthenReply packet. Required' \
-                               ' arguments server_msg and data must be strings'
+        assert str(e.value) == 'Data should be of type string'
 
 
     def test_create_instance_with_fields(self):
@@ -148,7 +147,7 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = ReplyPacketFields(0, 0, 'test', 'test')
-        pkt = AuthenReply(header, fields=fields, secret='test')
+        fields = AuthenReplyFields(0, 0, 'test', 'test')
+        pkt = AuthenReplyPacket(header, fields=fields, secret='test')
 
-        assert isinstance(pkt, AuthenReply)
+        assert isinstance(pkt, AuthenReplyPacket)

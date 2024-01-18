@@ -19,13 +19,48 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 
 log = logging.getLogger(__name__)
 
+
 @dataclass
-class ReplyPacketFields:
-    """Defines Authentication Reply fields required to create a Reply packet"""
-    status: int
-    flags: int
-    server_msg: str
+class AuthenStartFields:
+    """Defines Authentication Start packet fields"""
+    action: int
+    priv_lvl: int
+    authen_type: int
+    service: int
+    user: str
+    port: str
+    remote_address: str
     data: str
+
+    # Validate the data
+    def __post_init__(self):
+        if not isinstance(self.action, int) and not isinstance(self.action,
+                                                               str):
+            raise TypeError('Action should be of type int')
+
+        if not isinstance(self.priv_lvl, int) and not isinstance(self.priv_lvl,
+                                                                 str):
+            raise TypeError('Priviledge Level should be of type int')
+
+        if not isinstance(self.authen_type,
+                          int) and not isinstance(self.authen_type, str):
+            raise TypeError('Authentication Type should be of type int')
+
+        if not isinstance(self.service, int) and not isinstance(self.service,
+                                                                str):
+            raise TypeError('Service should be of type int')
+
+        if not isinstance(self.user, str):
+            raise TypeError('User should be of type string')
+
+        if not isinstance(self.port, str):
+            raise TypeError('Port should be of type string')
+
+        if not isinstance(self.remote_address, str):
+            raise TypeError('Remote Address should be of type string')
+
+        if not isinstance(self.data, str):
+            raise TypeError('Data should be of type string')
 
 
 class TACACSPlusAuthenStart(Packet):
@@ -69,46 +104,80 @@ class TACACSPlusAuthenStart(Packet):
             body = raw
 
         # Decode the packet body
-        fields['action'], fields['priv_lvl'] = struct.unpack('BB', body.read(2))
-        fields['authen_type'], fields['service'] = struct.unpack('BB', body.read(2))
-        user_len, port_len, rem_addr_len, data_len = struct.unpack('BBBB', body.read(4))
-        fields['user'] = body.read(user_len)
-        fields['port'] = body.read(port_len)
-        fields['remote_address'] = body.read(rem_addr_len)
-        fields['data'] = body.read(data_len)
+        try:
+            action, priv_lvl = struct.unpack('BB', body.read(2))
+            authen_type, service = struct.unpack('BB', body.read(2))
+            user_len, port_len, rem_addr_len, data_len = struct.unpack('BBBB',
+                                                                       body.read(4))
+            user = body.read(user_len).decode('UTF-8')
+            port = body.read(port_len).decode('UTF-8')
+            remote_address = body.read(rem_addr_len).decode('UTF-8')
+            data = body.read(data_len).decode('UTF-8')
+        except ValueError as e:
+            raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
 
         # Convert authentication action flag codes back to human readable strings
-        result = filter(lambda item: item[1] == fields['action'],
-                                     flags.TAC_PLUS_AUTHEN_ACTIONS.items())
         try:
-            fields['action'] = list(result)[0][0]
+            result = filter(lambda item: item[1] == action,
+                                     flags.TAC_PLUS_AUTHEN_ACTIONS.items())
+            action = list(result)[0][0]
 
             # Convert priveledge level flag codes back to human readable strings
-            result = filter(lambda item: item[1] == fields['priv_lvl'],
+            result = filter(lambda item: item[1] == priv_lvl,
                                          flags.TAC_PLUS_PRIV_LVL.items())
-            fields['priv_lvl'] = list(result)[0][0]
+            priv_lvl = list(result)[0][0]
 
-            # Convert authentication type flag codes back to human readable strings
-            result = filter(lambda item: item[1] == fields['authen_type'],
+            # Convert authentication type flag codes back to human readable
+            # strings
+            result = filter(lambda item: item[1] == authen_type,
                                          flags.TAC_PLUS_AUTHEN_TYPES.items())
-            fields['authen_type'] = list(result)[0][0]
+            authen_type = list(result)[0][0]
 
-            # Convert authentication service flag codes back to human readable strings
-            result = filter(lambda item: item[1] == fields['service'],
+            # Convert authentication service flag codes back to
+            # human readable strings
+            result = filter(lambda item: item[1] == service,
                                          flags.TAC_PLUS_AUTHEN_SVC.items())
-            fields['service'] = list(result)[0][0]
+            service = list(result)[0][0]
         except IndexError as e:
-            raise ValueError('Unable to decode AuthenSTART packet. TACACS+ client/server' \
-                             ' shared key probably does not match') from e
+            raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
 
-        return fields
+        return AuthenStartFields(action, priv_lvl, authen_type, service, user,
+                                 port, remote_address, data)
+
+
+@dataclass
+class AuthenReplyFields:
+    """Defines Authentication Reply fields required to create a Reply packet"""
+    status: int
+    flags: int
+    server_msg: str = ''
+    data: str = ''
+
+    # Validate the data
+    def __post_init__(self):
+        if not isinstance(self.status, int):
+            raise TypeError('Status should be of type int')
+
+        if not isinstance(self.flags, int):
+            raise TypeError('Flags should be of type int')
+
+        if not isinstance(self.server_msg, str):
+            raise TypeError('Server Message should be of type string')
+
+        if not isinstance(self.data, str):
+            raise TypeError('Data should be of type string')
 
 
 class TACACSPlusAuthenReply(Packet):
-    """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet bodies"""
+    """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet
+    bodies"""
 
-    def __init__(self, header, body=six.b(''),
-                 fields=ReplyPacketFields(0, 0, '', ''), secret=None):
+    def __init__(self, header, body=six.b(''), fields=AuthenReplyFields(0, 0),
+                 secret=None):
         """Initialise a TACAS+ Authentication REPLY packet body
 
         Initialise a TACACS+ Authentication REPLY packet. This can be done by
