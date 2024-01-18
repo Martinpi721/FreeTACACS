@@ -62,7 +62,7 @@ class TACACSPlusPacket:
         Exceptions:
           None
         Returns:
-          body(struct): deOfuscated packet body
+          body(struct): deofuscated packet body
         """
 
         return self.obfuscate
