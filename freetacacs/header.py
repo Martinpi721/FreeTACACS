@@ -24,14 +24,29 @@ class HeaderFields:
     version: int
     packet_type: int
     session_id: str
-    length: int
+    length: int = 0
+    sequence_no: int = 1
+    flags: int = 0
 
+    # Validate the data
+    def __post_init__(self):
+        if not isinstance(self.version, int):
+            raise TypeError('Version should be of type int')
 
-@dataclass
-class Fields(HeaderFields):
-    """TACACS+ header fields decoded"""
-    sequence_no: int
-    flags: int
+        if not isinstance(self.packet_type, int):
+            raise TypeError('Packet Type should be of type int')
+
+        if not isinstance(self.session_id, int):
+            raise TypeError('Session Id should be of type int')
+
+        if not isinstance(self.length, int):
+            raise TypeError('Length should be of type int')
+
+        if not isinstance(self.sequence_no, int):
+            raise TypeError('Sequence No should be of type int')
+
+        if not isinstance(self.flags, int):
+            raise TypeError('Flags should be of type int')
 
 
 class TACACSPlusHeader:
@@ -70,20 +85,6 @@ class TACACSPlusHeader:
         self._flags = flags
         self._session_id = fields.session_id
         self._length = fields.length
-
-        # Build header structure
-        try:
-            self._header = struct.pack('BBBB', # B = unsigned char
-                                       self._version,
-                                       self._packet_type,
-                                       self._sequence_no,
-                                       self._flags)
-
-            # !I = network-order (big-endian) unsigned int
-            self._header += struct.pack('!I', self._session_id)
-            self._header += struct.pack('!I', self._length)
-        except struct.error as e:
-            raise struct.error('All TACACS+ header fields must be integers') from e
 
 
     @property
@@ -163,6 +164,17 @@ class TACACSPlusHeader:
           header(struct): packed packet header structure
         """
 
+        # Build header structure
+        self._header = struct.pack('BBBB', # B = unsigned char
+                                   self._version,
+                                   self._packet_type,
+                                   self._sequence_no,
+                                   self._flags)
+
+        # !I = network-order (big-endian) unsigned int
+        self._header += struct.pack('!I', self._session_id)
+        self._header += struct.pack('!I', self._length)
+
         return self._header
 
 
@@ -213,7 +225,8 @@ class TACACSPlusHeader:
             # !I = network-order (big-endian) unsigned int
             session_id, length = struct.unpack('!II', raw.read(8))
 
-            header = Fields(version, packet_type, session_id, length, sequence_no, flags)
+            header = HeaderFields(version, packet_type, session_id, length,
+                                  sequence_no, flags)
         except struct.error as e:
             raise ValueError('Unable to extract header. TACACS+ client/server' \
                              ' shared key probably does not match') from e

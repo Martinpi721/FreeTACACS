@@ -130,10 +130,10 @@ class TestTACACSPlusHeader:
         session_id = 0x01
         length = 1
 
-        with pytest.raises(struct.error) as e:
+        with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'All TACACS+ header fields must be integers'
+        assert str(e.value) == 'Version should be of type int'
 
 
     def test_create_instance_invalid_packet_type(self):
@@ -144,10 +144,10 @@ class TestTACACSPlusHeader:
         session_id = 0x01
         length = 1
 
-        with pytest.raises(struct.error) as e:
+        with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'All TACACS+ header fields must be integers'
+        assert str(e.value) == 'Packet Type should be of type int'
 
 
     def test_create_instance_invalid_session_id(self):
@@ -158,10 +158,10 @@ class TestTACACSPlusHeader:
         session_id = '1'
         length = 1
 
-        with pytest.raises(struct.error) as e:
+        with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'All TACACS+ header fields must be integers'
+        assert str(e.value) == 'Session Id should be of type int'
 
 
     def test_create_instance_invalid_length(self):
@@ -172,10 +172,44 @@ class TestTACACSPlusHeader:
         session_id = 0x01
         length = '1'
 
-        with pytest.raises(struct.error) as e:
+        with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'All TACACS+ header fields must be integers'
+        assert str(e.value) == 'Length should be of type int'
+
+
+    def test_create_instance_invalid_sequence_no(self):
+        """Test we can handle a invalid sequence_no"""
+
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        sequence_no = '1'
+        flag = 0
+
+        with pytest.raises(TypeError) as e:
+            Header(HeaderFields(version, packet_type, session_id, length,
+                                sequence_no, flag))
+
+        assert str(e.value) == 'Sequence No should be of type int'
+
+
+    def test_create_instance_invalid_sequence_no(self):
+        """Test we can handle a invalid sequence_no"""
+
+        version = 0x01
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 0x01
+        length = 1
+        sequence_no = 1
+        flag = '1'
+
+        with pytest.raises(TypeError) as e:
+            Header(HeaderFields(version, packet_type, session_id, length,
+                                sequence_no, flag))
+
+        assert str(e.value) == 'Flags should be of type int'
 
 
     def test_decode_header(self):
