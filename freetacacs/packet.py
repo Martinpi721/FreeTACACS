@@ -108,3 +108,17 @@ class TACACSPlusPacket:
         obfuscated_body = struct.pack('B' * len(packet_body), *packet_body)
 
         return obfuscated_body
+
+
+    def __bytes__(self):
+        """Byte representation of TACACS+ packet header
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(byte): containing the TACACS+ packet header/body
+        """
+
+        return self._header.encoded + self.obfuscate
