@@ -11,10 +11,8 @@ Functions:
 
 from zope.interface import Interface, implementer
 
-from twisted.internet import protocol, defer
-from twisted.application import service
+from twisted.internet import protocol
 from twisted.python import components
-import six
 
 # Local imports
 from freetacacs.service import ITACACSPlusService
@@ -45,5 +43,3 @@ class TACACSPlusFactoryFromService(protocol.ServerFactory):
 
 
 components.registerAdapter(TACACSPlusFactoryFromService, ITACACSPlusService, ITACACSPlusFactory)
-
-

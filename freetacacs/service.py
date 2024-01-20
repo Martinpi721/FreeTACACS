@@ -11,7 +11,7 @@ Functions:
 
 from zope.interface import Interface, implementer
 
-from twisted.internet import protocol, defer
+from twisted.internet import defer
 from twisted.application import service
 
 # Local imports

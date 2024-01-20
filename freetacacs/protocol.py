@@ -8,7 +8,7 @@ Functions:
     catch_error
 """
 
-from twisted.internet import protocol, defer
+from twisted.internet import protocol
 import six
 
 # Local imports
@@ -20,7 +20,7 @@ from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
 
 def catch_error(err):
-        return "Internal error in server"
+    return "Internal error in server"
 
 
 class TACACSPlusProtocol(protocol.Protocol):

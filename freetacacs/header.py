@@ -85,6 +85,7 @@ class TACACSPlusHeader:
         self._flags = flags
         self._session_id = fields.session_id
         self._length = fields.length
+        self._header = b''
 
 
     @property
