@@ -2,7 +2,11 @@
 Module implements the TACACSPlusFactory class
 
 Classes:
-    TACACSPlusFActory
+    TACACSPlusProtocol
+    ITACACSPlusService
+    ITACACSPlusFactory
+    TACACSPlusFactoryFromService
+    TACACSPlusService
 
 Functions:
     catch_error
@@ -64,7 +68,6 @@ class TACACSPlusProtocol(protocol.Protocol):
                 0x05                           : self._auth_mschapv2,
         }
 
-
     def _auth_plain(self, rx_header, rx_body):
         """Process ascii authentication
 
@@ -78,7 +81,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         self._authen_reply_error(rx_header, rx_body)
-
 
     def _auth_pap(self, rx_header, rx_body):
         """Process pap authentication
@@ -94,7 +96,6 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         self._authen_reply_error(rx_header, rx_body)
 
-
     def _auth_chap(self, rx_header, rx_body):
         """Process chap authentication
 
@@ -108,7 +109,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         self._authen_reply_error(rx_header, rx_body)
-
 
     def _auth_mschap(self, rx_header, rx_body):
         """Process mschap authentication
@@ -124,7 +124,6 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         self._authen_reply_error(rx_header, rx_body)
 
-
     def _auth_mschapv2(self, rx_header, rx_body):
         """Process mschapv2 authentication
 
@@ -138,7 +137,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         self._authen_reply_error(rx_header, rx_body)
-
 
     def _authen_reply_error(self, rx_header, rx_body):
         """Process mschapv2 authentication
@@ -174,7 +172,6 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         d.addCallback(send_error)
 
-
     def _authentication(self, rx_header, raw_body):
         """Process authentication packets
 
@@ -208,7 +205,6 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         d.addCallback(decode_packet)
 
-
     def _authorisation(self, rx_header, raw_body):
         """Process authorisation packets
 
@@ -228,7 +224,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         else:
             print('author response')
 
-
     def _accounting(self, rx_header, raw_body):
         """Process accounting packets
 
@@ -247,7 +242,6 @@ class TACACSPlusProtocol(protocol.Protocol):
             print('acct request')
         else:
             print('acct response')
-
 
     def dataReceived(self, data):
         """Recieve data from network
@@ -323,7 +317,6 @@ class TACACSPlusService(service.Service):
         """
 
         return defer.succeed(self.secrets.get(ip, b"No such device"))
-
 
     def valid_credentials(self, username, password):
         """Lookup the client shared secret value from the clients ip address
