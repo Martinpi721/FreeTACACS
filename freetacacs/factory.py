@@ -8,8 +8,11 @@ Functions:
     catch_error
 """
 
+from zope.interface import Interface, implementer
+
 from twisted.application import service
 from twisted.internet import protocol, reactor, defer
+from twisted.python import components
 import six
 
 # Local imports
@@ -266,7 +269,40 @@ class TACACSPlusProtocol(protocol.Protocol):
         self.packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
 
 
+class ITACACSPlusService(Interface):
+    def get_shared_secret(ip):
+        """
+        Return a deferred returning L{bytes}.
+        """
 
+
+class ITACACSPlusFactory(Interface):
+    def get_shared_credentials(ip):
+        """
+        Return a deferred returning L{bytes}
+        """
+
+    def buildProtocol(addr):
+        """
+        Return a protocol returning L{bytes}
+        """
+
+
+@implementer(ITACACSPlusFactory)
+class TACACSPlusFactoryFromService(protocol.ServerFactory):
+    protocol = TACACSPlusProtocol
+
+    def __init__(self, service):
+        self.service = service
+
+    def get_shared_secret(self, ip):
+        return self.service.get_shared_secret(ip)
+
+
+components.registerAdapter(TACACSPlusFactoryFromService, ITACACSPlusService, ITACACSPlusFactory)
+
+
+@implementer(ITACACSPlusService)
 class TACACSPlusService(service.Service):
     """Class providing the TACACS+ service"""
 
@@ -303,17 +339,9 @@ class TACACSPlusService(service.Service):
 
         return defer.succeed(self.credentials.get(True, False))
 
-    def get_tacacs_factory(self):
-        f = protocol.ServerFactory()
-        f.protocol = TACACSPlusProtocol
-        f.get_shared_secret = self.get_shared_secret
-        f.valid_credentials = self.valid_credentials
-        return f
-
     def startService(self):
         service.Service.startService(self)
 
     def stopService(self):
         service.Service.stopService(self)
         self.call.cancel()
-
