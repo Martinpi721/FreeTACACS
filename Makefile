@@ -7,7 +7,7 @@ init:
 
 test: init
 	$(VENV_DIR)/bin/pip3 install -r ./requirements-test.txt
-	$(VENV_DIR)/bin/pytest --cov --cov-report term tests/
+	$(VENV_DIR)/bin/pytest --cov --cov-report term freetacacs/tests/
 
 clean:
 	rm -rf $(VENV_DIR)

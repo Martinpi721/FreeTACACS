@@ -248,7 +248,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         self.packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
 
 
-class TACACSPlusFactory(protocol.Factory):
+class TACACSPlusFactory(protocol.ServerFactory):
     """Class providing the TACACS+ factory"""
 
     protocol = TACACSPlusProtocol
@@ -294,9 +294,3 @@ class TACACSPlusFactory(protocol.Factory):
             log.debug('wibble {0}'.format(str(e)))
 
         return False
-
-
-if __name__ == "__main__":
-    reactor.listenTCP(4949, TACACSPlusFactory())
-    print("TACACS+ server listening on port 4949...")
-    reactor.run()
