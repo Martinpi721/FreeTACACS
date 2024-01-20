@@ -5,10 +5,11 @@ Classes:
     TACACSPlusFActory
 
 Functions:
-    None
+    catch_error
 """
 
-from twisted.internet import protocol, reactor
+from twisted.application import service
+from twisted.internet import protocol, reactor, defer
 import six
 
 # Local imports
@@ -18,6 +19,11 @@ from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authentication import AuthenReplyFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
+
+
+def catch_error(err):
+        return "Internal error in server"
+
 
 class TACACSPlusProtocol(protocol.Protocol):
     """Define the TACACS+ protocol"""
@@ -143,20 +149,27 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Build reply packet header
-        seq_no = rx_header.sequence_no + 1
-        tx_header = Header(HeaderFields(rx_header.version,
-                                        flags.TAC_PLUS_AUTHEN,
-                                        rx_header.session_id, 0), seq_no)
+        d = self.factory.get_shared_secret(self.ip_address)
+        d.addErrback(catch_error)
 
-        # Build the error reply packet body
-        fields = AuthenReplyFields(flags.TAC_PLUS_AUTHEN_STATUS_ERROR, 0,
-                                   'Functionality NOT implemented')
-        reply = AuthenReplyPacket(tx_header, fields=fields,
-                                  secret=self.shared_secret)
+        def send_error(value):
 
-        # Write your packet to the transport layer
-        self.transport.write(bytes(reply))
+            # Build reply packet header
+            seq_no = rx_header.sequence_no + 1
+            tx_header = Header(HeaderFields(rx_header.version,
+                                            flags.TAC_PLUS_AUTHEN,
+                                            rx_header.session_id, 0), seq_no)
+
+            # Build the error reply packet body
+            fields = AuthenReplyFields(flags.TAC_PLUS_AUTHEN_STATUS_ERROR, 0,
+                                       'Functionality NOT implemented')
+            reply = AuthenReplyPacket(tx_header, fields=fields,
+                                      secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+        d.addCallback(send_error)
 
 
     def _authentication(self, rx_header, raw_body):
@@ -171,19 +184,26 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Determine the type of packet to process
-        # AuthenSTART
-        if rx_header.sequence_no == 1:
-            pkt = AuthenStartPacket(rx_header, raw_body, secret='test')
-            rx_body_fields = pkt.decode
+        d = self.factory.get_shared_secret(self.ip_address)
+        d.addErrback(catch_error)
 
-            # Use function mapper dict to decide how we handle the packet
-            self.auth_type_mapper[rx_body_fields.authen_type](rx_header,
-                                                              rx_body_fields)
+        def decode_packet(value):
 
-        # AuthenCONTINUE
-        else:
-            print('authen continue')
+            # Determine the type of packet to process
+            # AuthenSTART
+            if rx_header.sequence_no == 1:
+                pkt = AuthenStartPacket(rx_header, raw_body, secret=value)
+                rx_body_fields = pkt.decode
+
+                # Use function mapper dict to decide how we handle the packet
+                self.auth_type_mapper[rx_body_fields.authen_type](rx_header,
+                                                                  rx_body_fields)
+
+            # AuthenCONTINUE
+            else:
+                print('authen continue')
+
+        d.addCallback(decode_packet)
 
 
     def _authorisation(self, rx_header, raw_body):
@@ -237,9 +257,7 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        ip_address = self.transport.getPeer().host
-        self.shared_secret = self.factory.get_shared_secret(ip_address)
-
+        self.ip_address = self.transport.getPeer().host
         # Decode the TACACS+ packet header
         raw = six.BytesIO(data)
         rx_header = Header.decode(raw.read(12))
@@ -248,10 +266,14 @@ class TACACSPlusProtocol(protocol.Protocol):
         self.packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
 
 
-class TACACSPlusFactory(protocol.ServerFactory):
-    """Class providing the TACACS+ factory"""
 
-    protocol = TACACSPlusProtocol
+class TACACSPlusService(service.Service):
+    """Class providing the TACACS+ service"""
+
+    def __init__(self):
+        self.secrets = { '127.0.0.1': 'test' }
+        self.credentials = { 'test': 'test' }
+        self.ip_address = ''
 
     def get_shared_secret(self, ip):
         """Lookup the client shared secret value from the clients ip address
@@ -264,13 +286,7 @@ class TACACSPlusFactory(protocol.ServerFactory):
           secret(str): containing the shared secret key
         """
 
-        secrets = { '127.0.0.1': 'test' }
-
-        try:
-            return secrets[ip]
-        except KeyError as e:
-            log.debug('wibble {0}'.format(str(e)))
-            return ''
+        return defer.succeed(self.secrets.get(ip, b"No such device"))
 
 
     def valid_credentials(self, username, password):
@@ -285,12 +301,19 @@ class TACACSPlusFactory(protocol.ServerFactory):
           secret(str): containing the shared secret key
         """
 
-        credentials = { 'test': 'test' }
+        return defer.succeed(self.credentials.get(True, False))
 
-        try:
-            if credentials[username] == password:
-                return True
-        except KeyError as e:
-            log.debug('wibble {0}'.format(str(e)))
+    def get_tacacs_factory(self):
+        f = protocol.ServerFactory()
+        f.protocol = TACACSPlusProtocol
+        f.get_shared_secret = self.get_shared_secret
+        f.valid_credentials = self.valid_credentials
+        return f
 
-        return False
+    def startService(self):
+        service.Service.startService(self)
+
+    def stopService(self):
+        service.Service.stopService(self)
+        self.call.cancel()
+
