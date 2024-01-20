@@ -18,4 +18,3 @@ run: init
 lint: init
 	$(VENV_DIR)/bin/pip3 install pylint
 	$(VENV_DIR)/bin/pylint freetacacs || return 0
-	$(VENV_DIR)/bin/pylint tests || return 0
