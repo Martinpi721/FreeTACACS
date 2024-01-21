@@ -245,7 +245,9 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
+        # Get the IP address of the TACACS+ client
         self.ip_address = self.transport.getPeer().host
+
         # Decode the TACACS+ packet header
         raw = six.BytesIO(data)
         rx_header = Header.decode(raw.read(12))
