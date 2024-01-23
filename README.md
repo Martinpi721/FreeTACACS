@@ -48,7 +48,7 @@ pip install -r requirement.txt
 1. Run the TACACS+ server:
 
 ```bash
-sudo twistd -noy freetacacs_plugin.py
+sudo twistd -noy -l -p /var/run/freetacacs.pid freetacacs.tac
 ```
 
 2. Configure network equipment to use server instance
