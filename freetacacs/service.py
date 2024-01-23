@@ -64,4 +64,3 @@ class TACACSPlusService(service.Service):
 
     def stopService(self):
         service.Service.stopService(self)
-        self.call.cancel()
