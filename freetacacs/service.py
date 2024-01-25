@@ -27,7 +27,8 @@ class ITACACSPlusService(Interface):
 class TACACSPlusService(service.Service):
     """Class providing the TACACS+ service"""
 
-    def __init__(self):
+    def __init__(self, options):
+        self.options = options
         self.secrets = { '127.0.0.1': 'test' }
         self.credentials = { 'test': 'test' }
         self.ip_address = ''

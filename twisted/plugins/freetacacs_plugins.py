@@ -6,6 +6,12 @@ from twisted.application.service import IServiceMaker, IService, Service
 
 from freetacacs.service import TACACSPlusService
 
+class CommandLineOptions(Options):
+    optParameters = [
+        ['user', 'u', None, 'User to run service as'],
+        ['group', 'g', None, 'Group to run service as'],
+        ]
+
 @provider(IServiceMaker, IPlugin)
 class FreeTACACSStart:
     """
@@ -14,21 +20,16 @@ class FreeTACACSStart:
 
     tapname = "freetacacs-start"
     description = "Run the FreeTACACS server"
-
-    class options(Options):
-        optParameters = [
-            ('dbdir', 'd', None, 'Path containing Axiom database to start'),
-            ('journal-mode', None, None, 'SQLite journal mode to set'),
-            ]
-
-        optFlags = [('debug', 'b', 'Enable Axiom-level debug logging')]
+    options = CommandLineOptions
 
 
     def makeService(cls, options):
         """
         Create an L{IService} for the FreeTACACS server
         """
-        return TACACSPlusService()
+
+        service = TACACSPlusService(options)
+        return service
 
     makeService = classmethod(makeService)
 
