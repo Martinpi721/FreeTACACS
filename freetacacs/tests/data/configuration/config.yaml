@@ -1,0 +1,10 @@
+# Shared secrets configuration
+secrets_type: file
+secrets_file: /etc/freetacacs/shared_secrets.json
+
+# Authentication configuration
+auth_type: pam
+
+# Authorisation configuration
+author_type: file
+author_file: /etc/freetacacs/authorisations.json

@@ -1,1 +1,2 @@
+PyYAML==6.0.1
 Twisted[tls]==23.10.0
