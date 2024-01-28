@@ -16,6 +16,7 @@ from twisted.application import service
 
 # Local imports
 
+
 class ITACACSPlusService(Interface):
     def get_shared_secret(ip):
         """
