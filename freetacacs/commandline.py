@@ -9,8 +9,12 @@ Functions:
 """
 
 import sys
-from configargparse import ArgParser
+
+from twisted import copyright
 from twisted.python.usage import Options
+
+# Local imports
+from freetacacs import version
 
 
 class CommandLineOptions(Options):
@@ -33,10 +37,7 @@ class CommandLineOptions(Options):
         Override the default version function to display FreeTACACS version
         in addition to the twisted version
         """
-        from twisted import copyright
-        from freetacacs import version
 
         print(f'FreeTACACS version: {version.__version__}')
         print(f'Twisted version: {copyright.version}')
         sys.exit(0)
-
