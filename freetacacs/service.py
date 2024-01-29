@@ -13,9 +13,11 @@ from zope.interface import Interface, implementer
 
 from twisted.internet import defer
 from twisted.application import service
+from twisted.logger import Logger
 
 # Local imports
-
+from freetacacs.version import __version__
+from freetacacs.configuration import load_config
 
 class ITACACSPlusService(Interface):
     def get_shared_secret(ip):
@@ -28,10 +30,44 @@ class ITACACSPlusService(Interface):
 class TACACSPlusService(service.Service):
     """Class providing the TACACS+ service"""
 
+    # Setup the logger
+    log = Logger()
+
     def __init__(self, options):
-        self.options = options
-        self.secrets = { '127.0.0.1': 'test' }
-        self.credentials = { 'test': 'test' }
+        """Load backend configuration, shared secrets, authentication and
+        authorisation data
+
+        Args:
+          options(dict): containing FreeTACACS command line options
+        Exceptions:
+          None
+        Returns
+          None
+        """
+
+        # import pdb; pdb.set_trace()
+        self.log.info(f"FreeTACACS {__version__} starting up.")
+
+        # Create a single configuration dictionary
+        self.cfg = options
+        self.cfg.update(load_config(self.cfg['config']))
+        self.log.info(f"Configuration loaded from {self.cfg['config']}.")
+
+        # Load shared secrets from file if we are using a file backend
+        if self.cfg['secrets_type'] == 'file':
+            self.secrets = { '127.0.0.1': 'test' }
+            self.log.info(f"Shared secrets loaded from {self.cfg['secrets_file']}.")
+
+        # Load credentials from file if we are using a file backend
+        if self.cfg['auth_type'] == 'file':
+            self.credentials = { 'test': 'test' }
+            self.log.info(f"Authentication credentials loaded from {self.cfg['auth_file']}.")
+
+        # Load authorisation from file if we are using a file backend
+        if self.cfg['author_type'] == 'file':
+            self.authorisations = { 'test': 'test' }
+            self.log.info(f"Authorisations loaded from {self.cfg['author_file']}.")
+
         self.ip_address = ''
 
     def get_shared_secret(self, ip):
@@ -62,7 +98,9 @@ class TACACSPlusService(service.Service):
         return defer.succeed(self.credentials.get(True, False))
 
     def startService(self):
+        self.log.info("FreeTACACS ready to answer client requests.")
         service.Service.startService(self)
 
     def stopService(self):
+        self.log.info("FreeTACACS has been requested to shut down.")
         service.Service.stopService(self)
