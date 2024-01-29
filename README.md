@@ -43,12 +43,18 @@ cd FreeTACACS
 pip install -r requirement.txt
 ```
 
+3. Install
+
+```bash
+pip install .
+```
+
 ### Usage
 
 1. Run the TACACS+ server:
 
 ```bash
-sudo twistd -noy -l -p /var/run/freetacacs.pid freetacacs.tac
+sudo twistd -n freetacacs-start --config /etc/freetacacs/config.yaml
 ```
 
 2. Configure network equipment to use server instance
