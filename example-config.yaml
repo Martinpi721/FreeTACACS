@@ -1,7 +1,34 @@
+# log_dst
+# Where FreeTACACS will sent log events [file|syslog]
+# Default: file
+log_dst: file
+
+# log_file
+# Full path to the JSON formatted shared secrets file
+# Default: /var/log/freetacacs/freetacacs.log
+log_file: /var/log/freetacacs/freetacacs.log
+
+# secrets_type
+# Where FreeTACACS will load shared secrets from
+# Default: file
 secrets_type: file
+
+# secrets_file
+# Full path to the JSON formatted shared secrets file
+# Default: /etc/freetacacs/shared_secrets.json
 secrets_file: /etc/freetacacs/shared_secrets.json
 
+# auth_type
+# Authentication mechanism to use to authenticate TACACS users
+# Default: pam
 auth_type: pam
 
+# author_type
+# Authorisation mechanism to use to authorise TACACS users actions
+# Default: file
 author_type: file
+
+# author_file
+# Full path to the JSON formatted authorisations file
+# Default: /etc/freetacacs/authorisations.json
 author_file: /etc/freetacacs/authorisations.json
