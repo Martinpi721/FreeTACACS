@@ -53,6 +53,10 @@ class TACACSPlusService(service.Service):
         self.cfg.update(load_config(self.cfg['config']))
         self.log.info(f"Configuration loaded from {self.cfg['config']}.")
 
+        # If debugging is enabled then log at bebug level
+        if self.cfg['debug']:
+            log.setLogLevel(log.DEBUG)
+
         # Load shared secrets from file if we are using a file backend
         if self.cfg['secrets_type'] == 'file':
             self.secrets = { '127.0.0.1': 'test' }
