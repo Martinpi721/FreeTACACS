@@ -6,8 +6,10 @@ Classes:
 
 Functions:
     load_config
+    validate_config
 """
 
+import os
 import yaml
 from twisted.logger import Logger
 
@@ -55,3 +57,33 @@ def load_config(file_path):
             configuration[key] = value
 
     return configuration
+
+
+def valid_config(cfg):
+    """Load the FreeTACAS+ backend confiugration options
+
+    Args:
+      cfg(dict): containing the proposed configuration
+    Exceptions:
+      None
+    Returns:
+      valid(bool): configuration is valid/invalid
+    """
+
+    # Loop over the configuration dictionary
+    for key, value in cfg.items():
+        # Check each of these keys
+        if key == 'log_dst' or key == 'secrets_type' or key == 'author_type':
+            if value != 'file':
+                return False
+
+        # Check to see if file exists
+        if key == 'log_file' or key == 'secrets_file' or key == 'author_file':
+            if not os.path.isfile:
+                return False
+
+        # Check auth_type is valid
+        if key == 'auth_type' and value != 'pam':
+            return False
+
+    return True
