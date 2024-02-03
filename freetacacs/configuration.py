@@ -81,19 +81,25 @@ def valid_config(cfg):
 
     # Loop over the configuration dictionary
     for key, value in cfg.items():
+        log.debug(message=f'Configuration key [{key}] set to [{value}].')
+
         # Check each of these keys
         if key == 'log_type' or key == 'secrets_type' or key == 'author_type':
             if value != 'file':
-                raise ConfigTypeError(f'Config option {key} has invalid value' \
-                                      f' [{value}]')
+                msg = f'Config option {key} has invalid value [{value}].'
+                log.debug(message=msg)
+                raise ConfigTypeError(msg)
 
         # Check to see if file exists
         if key == 'log_file' or key == 'secrets_file' or key == 'author_file':
             if not os.path.exists(value):
-                raise ConfigFileError(f'Unable to find file {value} specified by' \
-                                      f' configuration option {key}')
+                msg = f'Unable to find file {value} specified by configuration' \
+                      f' option {key}.'
+                log.debug(message=msg)
+                raise ConfigFileError(msg)
 
         # Check auth_type is valid
         if key == 'auth_type' and value != 'pam':
-            raise ConfigTypeError(f'Config option {key} has invalid value' \
-                                  f' [{value}]')
+            msg = f'Config option {key} has invalid value [{value}].'
+            log.debug(message=msg)
+            raise ConfigTypeError(msg)
