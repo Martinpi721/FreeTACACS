@@ -31,7 +31,7 @@ def load_config(file_path):
 
     # Set default configuration values
     configuration = {
-                       'log_dst'     : 'file',
+                       'log_type'     : 'file',
                        'log_file'    : '/var/log/freetacacs/freetacacs.log',
                        'secrets_type': 'file',
                        'secrets_file': '/etc/freetacacs/shared_secrets.json',

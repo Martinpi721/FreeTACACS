@@ -36,7 +36,7 @@ class TestConfiguration(unittest.TestCase):
         """Test we can handle a missing configuration file"""
 
         required_cfg = {
-                         'log_dst'     : 'file',
+                         'log_type'     : 'file',
                          'log_file'    : '/var/log/freetacacs/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/freetacacs/shared_secrets.json',
@@ -72,7 +72,7 @@ class TestConfiguration(unittest.TestCase):
         """Test we handle a yaml file with valid data set"""
 
         required_cfg = {
-                         'log_dst'     : 'file',
+                         'log_type'     : 'file',
                          'log_file'    : '/var/log/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/shared_secrets.json',
@@ -91,7 +91,7 @@ class TestConfiguration(unittest.TestCase):
         """Test we handle a yaml file with valid data set"""
 
         required_cfg = {
-                         'log_dst'     : 'file',
+                         'log_type'     : 'file',
                          'log_file'    : '/var/log/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/shared_secrets.json',
