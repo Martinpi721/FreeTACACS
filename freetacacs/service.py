@@ -17,7 +17,8 @@ from twisted.logger import Logger
 
 # Local imports
 from freetacacs.version import __version__
-from freetacacs.configuration import load_config
+from freetacacs.configuration import load_config, valid_config
+from freetacacs.configuration import ConfigTypeError, ConfigFileError
 
 class ITACACSPlusService(Interface):
     def get_shared_secret(ip):
@@ -51,6 +52,12 @@ class TACACSPlusService(service.Service):
         # Create a single configuration dictionary
         self.cfg = options
         self.cfg.update(load_config(self.cfg['config']))
+        try:
+            valid_config(self.cfg)
+        except (ConfigTypeError, ConfigFileError) as e:
+            self.log.critical(message=str(e))
+            self.stopService()
+
         self.log.info(f"Configuration loaded from {self.cfg['config']}.")
 
         # If debugging is enabled then log at bebug level
