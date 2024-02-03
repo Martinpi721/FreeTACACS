@@ -15,6 +15,7 @@ from twisted.python import log
 
 # Import code to be tested
 from freetacacs.configuration import load_config, valid_config
+from freetacacs.configuration import ConfigTypeError, ConfigFileError
 
 
 class TestConfiguration(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestConfiguration(unittest.TestCase):
     def setUp(self) -> None:
         """Setup for all tests"""
 
-        self.data_dir = './freetacacs/tests/data'
+        self.data_dir = './freetacacs/tests/data/configuration'
 
         # Log capture
         self.catcher: list[log.EventDict] = []
@@ -81,7 +82,7 @@ class TestConfiguration(unittest.TestCase):
                          'author_file': '/etc/authorisations.json',
                     }
 
-        file_path = f"{self.data_dir}/configuration/config.json"
+        file_path = f"{self.data_dir}/etc/config.json"
         cfg = load_config(file_path)
 
         self.assertDictEqual(cfg, required_cfg)
@@ -100,7 +101,7 @@ class TestConfiguration(unittest.TestCase):
                          'author_file': '/etc/authorisations.json',
                     }
 
-        file_path = f"{self.data_dir}/configuration/config.yaml"
+        file_path = f"{self.data_dir}/etc/config.yaml"
         cfg = load_config(file_path)
 
         self.assertDictEqual(cfg, required_cfg)
@@ -112,99 +113,158 @@ class TestValidConfig(unittest.TestCase):
     def setUp(self) -> None:
         """Setup for all tests"""
 
-        self.data_dir = './freetacacs/tests/data'
+        self.data_dir = './freetacacs/tests/data/configuration'
 
     def test_valid_configuration(self):
-        """Test that the default configuration is valid"""
+        """Test that the a configuration is valid"""
 
         cfg = {
-                 'log_dst'     : 'file',
-                 'log_file'    : '/var/log/freetacacs.log',
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'pam',
-                 'author_type': 'file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertTrue(valid_config(cfg))
+        self.assertIsNone(valid_config(cfg))
 
 
-    def test_invalid_log_dst(self):
-        """Test that we can validate log_dst"""
+    def test_invalid_log_type(self):
+        """Test that we can validate log_type"""
 
         cfg = {
-                 'log_dst'     : 'not_a_file',
-                 'log_file'    : '/var/log/freetacacs.log',
+                 'log_type'    : 'not_a_file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'pam',
-                 'author_type': 'file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertFalse(valid_config(cfg))
+        with self.assertRaises(ConfigTypeError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Config option log_type has invalid value [not_a_file].')
 
 
     def test_invalid_secrets_type(self):
         """Test that we can validate secrets_type"""
 
         cfg = {
-                 'log_dst'     : 'file',
-                 'log_file'    : '/var/log/freetacacs.log',
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'not_a_file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'pam',
-                 'author_type': 'file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertFalse(valid_config(cfg))
+        with self.assertRaises(ConfigTypeError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Config option secrets_type has invalid value [not_a_file].')
 
 
     def test_invalid_author_type(self):
         """Test that we can validate author_type"""
 
         cfg = {
-                 'log_dst'     : 'file',
-                 'log_file'    : '/var/log/freetacacs.log',
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'pam',
-                 'author_type': 'not_a_file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'not_a_file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertFalse(valid_config(cfg))
+        with self.assertRaises(ConfigTypeError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Config option author_type has invalid value [not_a_file].')
 
 
     def test_invalid_auth_type(self):
         """Test that we can validate auth_type"""
 
         cfg = {
-                 'log_dst'     : 'file',
-                 'log_file'    : '/var/log/freetacacs.log',
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'not_pam',
-                 'author_type': 'file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'not_pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertFalse(valid_config(cfg))
+        with self.assertRaises(ConfigTypeError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Config option auth_type has invalid value [not_pam].')
 
 
     def test_missing_log_file(self):
         """Test that log_file value exists"""
 
         cfg = {
-                 'log_dst'     : 'file',
-                 'log_file'    : f'{self.data_dir}/var/log/freetacacs.log',
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/missing.log',
                  'secrets_type': 'file',
-                 'secrets_file': '/etc/shared_secrets.json',
-                 'auth_type': 'not_pam',
-                 'author_type': 'file',
-                 'author_file': '/etc/authorisations.json',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
             }
 
-        self.assertFalse(valid_config(cfg))
+        with self.assertRaises(ConfigFileError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Unable to find file' \
+                      ' ./freetacacs/tests/data/configuration/log/missing.log' \
+                      ' specified by configuration option log_file.')
+
+
+    def test_missing_share_secrets_file(self):
+        """Test that secrets_file value exists"""
+
+        cfg = {
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
+                 'secrets_type': 'file',
+                 'secrets_file': f'{self.data_dir}/etc/missing.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
+            }
+
+        with self.assertRaises(ConfigFileError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Unable to find file' \
+                      ' ./freetacacs/tests/data/configuration/etc/missing.json' \
+                      ' specified by configuration option secrets_file.')
+
+
+    def test_missing_authorisations_file(self):
+        """Test that author_file value exists"""
+
+        cfg = {
+                 'log_type'    : 'file',
+                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
+                 'secrets_type': 'file',
+                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
+                 'auth_type'   : 'pam',
+                 'author_type' : 'file',
+                 'author_file' : f'{self.data_dir}/etc/missing.json',
+            }
+
+        with self.assertRaises(ConfigFileError) as e:
+            valid_config(cfg)
+
+        self.assertIn(str(e.exception), 'Unable to find file' \
+                      ' ./freetacacs/tests/data/configuration/etc/missing.json' \
+                      ' specified by configuration option author_file.')

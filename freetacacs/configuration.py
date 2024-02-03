@@ -2,7 +2,8 @@
 Module implements the TACACS+ configuration parsing
 
 Classes:
-    None
+    ConfigTypeError
+    ConfigFileError
 
 Functions:
     load_config
@@ -16,6 +17,13 @@ from twisted.logger import Logger
 
 # Setup the logger
 log = Logger()
+
+class ConfigTypeError(Exception):
+    """Raised when a configuration _type option is invalid"""
+
+
+class ConfigFileError(Exception):
+    """Raised when a configuration _file option is invalid"""
 
 
 def load_config(file_path):
@@ -65,25 +73,27 @@ def valid_config(cfg):
     Args:
       cfg(dict): containing the proposed configuration
     Exceptions:
-      None
+      ConfigTypeError
+      ConfigFileError
     Returns:
-      valid(bool): configuration is valid/invalid
+      None
     """
 
     # Loop over the configuration dictionary
     for key, value in cfg.items():
         # Check each of these keys
-        if key == 'log_dst' or key == 'secrets_type' or key == 'author_type':
+        if key == 'log_type' or key == 'secrets_type' or key == 'author_type':
             if value != 'file':
-                return False
+                raise ConfigTypeError(f'Config option {key} has invalid value' \
+                                      f' [{value}]')
 
         # Check to see if file exists
         if key == 'log_file' or key == 'secrets_file' or key == 'author_file':
-            if not os.path.isfile:
-                return False
+            if not os.path.exists(value):
+                raise ConfigFileError(f'Unable to find file {value} specified by' \
+                                      f' configuration option {key}')
 
         # Check auth_type is valid
         if key == 'auth_type' and value != 'pam':
-            return False
-
-    return True
+            raise ConfigTypeError(f'Config option {key} has invalid value' \
+                                  f' [{value}]')
