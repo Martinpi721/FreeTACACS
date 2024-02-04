@@ -147,6 +147,8 @@ class TestCommandLineOptions(unittest.TestCase):
                 '--port',
                 4949,
                 '--debug',
+                '--config',
+                '/etc/freetacacs.conf',
             ]
 
         mock_getpwnam.return_value.pw_uid = 123
@@ -160,5 +162,5 @@ class TestCommandLineOptions(unittest.TestCase):
         self.assertEqual(options['user'], 'jsmith')
         self.assertEqual(options['group'], 'jsmith')
         self.assertEqual(options['port'], '4949')
-        self.assertEqual(options['config'], '/etc/freetacacs/freetacacs.conf')
+        self.assertEqual(options['config'], '/etc/freetacacs.conf')
         self.assertTrue(options['debug'])
