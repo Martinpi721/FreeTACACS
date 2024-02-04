@@ -47,17 +47,8 @@ class FreeTACACSStart:
 
         # Set the uid/gid to run the service as
         f.setServiceParent(s)
-        try:
-            f.uid = getpwnam(f"{options['user']}").pw_uid      # Returns UID only
-            f.gid = getgrnam(f"{options['group']}").gr_gid     # Returns GID only
-        except KeyError as e:
-            if str(e).startswith('"getpwnam'):
-                print(f"Unable to start FreeTACACS service, user" \
-                      f" {options['user']} does not exist")
-            if str(e).startswith('"getgrnam'):
-                print(f"Unable to start FreeTACACS service, group" \
-                      f" {options['group']} does not exist")
-            sys.exit(1)
+        f.uid = getpwnam(f"{options['user']}").pw_uid      # Returns UID only
+        f.gid = getgrnam(f"{options['group']}").gr_gid     # Returns GID only
 
         # Set the tcp port no. to listen on
         h = strports.service(f"tcp:{options['port']}", ITACACSPlusFactory(f))
