@@ -8,6 +8,7 @@ Functions:
     None
 """
 
+import os
 import sys
 import getpass
 
@@ -30,6 +31,7 @@ class CommandLineOptions(Options):
                 ['config', 'c', '/etc/freetacacs/freetacacs.conf',
                  'Configuration file path.'],
                 ['group', 'g', 'freetacacs', 'Group to run service as.'],
+                ['log', 'l', '/var/log/freetacacs/freetacacs.log', 'file to log events to.'],
                 ['port', 'p', 49, 'Port for service to listen on.'],
                 ['user', 'u', 'freetacacs', 'User to run service as.'],
             ]
@@ -65,6 +67,10 @@ class CommandLineOptions(Options):
 
             if str(e).startswith('"getgrnam'):
                 raise UsageError(f"Group {self['group']} not found.")
+
+        # Check to see if log file exists
+        if not os.path.exists(self['log']):
+            raise UsageError(f"Log file {self['log']} not found.")
 
         # Get username of user running script
         current_user = getpass.getuser()

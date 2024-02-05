@@ -23,6 +23,13 @@ from freetacacs.commandline import CommandLineOptions
 class TestCommandLineOptions(unittest.TestCase):
     """Class to test the CommandLineOptions class"""
 
+    def setUp(self) -> None:
+        """Setup for all tests"""
+
+        self.data_dir = './freetacacs/tests/data/commandline'
+
+
+    @patch('freetacacs.commandline.os.path.exists')
     @patch('freetacacs.commandline.getpwnam')  # Second call to pwnam
     @patch('freetacacs.commandline.getpass.getuser')
     @patch('freetacacs.commandline.getgrnam')
@@ -31,7 +38,8 @@ class TestCommandLineOptions(unittest.TestCase):
                                            mock_getpwnam,
                                            mock_getgrnam,
                                            mock_getuser,
-                                           mock_get_root_pwnam):
+                                           mock_get_root_pwnam,
+                                           mock_path_exists):
         """Test we handle the default commandline options"""
 
         args = []
@@ -40,6 +48,7 @@ class TestCommandLineOptions(unittest.TestCase):
         mock_get_root_pwnam.return_value.pw_uid = 0
         mock_getgrnam.return_value.gr_gid = 456
         mock_getuser.return_value = 'root'
+        mock_path_exists.return_value = True
 
         options = CommandLineOptions()
         options.parseOptions(args)
@@ -48,6 +57,7 @@ class TestCommandLineOptions(unittest.TestCase):
         self.assertEqual(options['group'], 'freetacacs')
         self.assertEqual(options['port'], 49)
         self.assertEqual(options['config'], '/etc/freetacacs/freetacacs.conf')
+        self.assertEqual(options['log'], '/var/log/freetacacs/freetacacs.log')
         self.assertFalse(options['debug'])
 
 
@@ -75,13 +85,15 @@ class TestCommandLineOptions(unittest.TestCase):
         self.assertEqual(versions[1], 'Twisted version: 23.10.0')
 
 
+    @patch('freetacacs.commandline.os.path.exists')
     @patch('freetacacs.commandline.getpwnam')  # Second call to pwnam
     @patch('freetacacs.commandline.getpass.getuser')
     @patch('freetacacs.commandline.getgrnam')
     @patch('freetacacs.commandline.getpwnam')  # First call to getpwnam
     def test_setting_debug_flag(self, mock_getpwnam,
                                 mock_getgrnam, mock_getuser,
-                                mock_get_current_user_pwnam):
+                                mock_get_current_user_pwnam,
+                                mock_path_exists):
         """Test we handle setting the debug flag"""
 
         args = ['--debug']
@@ -90,6 +102,7 @@ class TestCommandLineOptions(unittest.TestCase):
         mock_get_current_user_pwnam.return_value.pw_uid = 0
         mock_getgrnam.return_value.gr_gid = 456
         mock_getuser.return_value = 'root'
+        mock_path_exists.return_value = True
 
         options = CommandLineOptions()
         options.parseOptions(args)
@@ -98,9 +111,11 @@ class TestCommandLineOptions(unittest.TestCase):
         self.assertEqual(options['group'], 'freetacacs')
         self.assertEqual(options['port'], 49)
         self.assertEqual(options['config'], '/etc/freetacacs/freetacacs.conf')
+        self.assertEqual(options['log'], '/var/log/freetacacs/freetacacs.log')
         self.assertTrue(options['debug'])
 
 
+    @patch('freetacacs.commandline.os.path.exists')
     @patch('freetacacs.commandline.getpwnam')  # Second call to pwnam
     @patch('freetacacs.commandline.getpass.getuser')
     @patch('freetacacs.commandline.getgrnam')
@@ -109,8 +124,34 @@ class TestCommandLineOptions(unittest.TestCase):
                                                 mock_getpwnam,
                                                 mock_getgrnam,
                                                 mock_getuser,
-                                                mock_get_current_user_pwnam):
+                                                mock_get_current_user_pwnam,
+                                                mock_path_exists):
         """Test we handle the process start user without root access"""
+
+        args = []
+
+        mock_getpwnam.return_value.pw_uid = 123
+        mock_get_current_user_pwnam.return_value.pw_uid = 1000
+        mock_getgrnam.return_value.gr_gid = 456
+        mock_getuser.return_value = 'jsmith'
+        mock_path_exists.return_value = True
+
+        with self.assertRaises(UsageError) as e:
+            options = CommandLineOptions()
+            options.parseOptions(args)
+
+        self.assertEqual(str(e.exception), 'User freetacacs cannot start a' \
+                                           ' service on port 49. Insufficient' \
+                                           ' privilege.')
+
+
+    @patch('freetacacs.commandline.getpwnam')  # Second call to pwnam
+    @patch('freetacacs.commandline.getpass.getuser')
+    @patch('freetacacs.commandline.getgrnam')
+    @patch('freetacacs.commandline.getpwnam')  # First call to getpwnam
+    def test_missing_log_file(self, mock_getpwnam, mock_getgrnam,
+                              mock_getuser, mock_get_current_user_pwnam):
+        """Test we handle a missing log file"""
 
         args = []
 
@@ -123,9 +164,9 @@ class TestCommandLineOptions(unittest.TestCase):
             options = CommandLineOptions()
             options.parseOptions(args)
 
-        self.assertEqual(str(e.exception), 'User freetacacs cannot start a' \
-                                           ' service on port 49. Insufficient' \
-                                           ' privilege.')
+        self.assertEqual(str(e.exception),
+                         'Log file /var/log/freetacacs/freetacacs.log' \
+                         ' not found.')
 
 
     @patch('freetacacs.commandline.getpwnam')  # Second call to pwnam
@@ -149,6 +190,8 @@ class TestCommandLineOptions(unittest.TestCase):
                 '--debug',
                 '--config',
                 '/etc/freetacacs.conf',
+                '--log',
+                f'{self.data_dir}/log/freetacacs.log',
             ]
 
         mock_getpwnam.return_value.pw_uid = 123
@@ -163,4 +206,5 @@ class TestCommandLineOptions(unittest.TestCase):
         self.assertEqual(options['group'], 'jsmith')
         self.assertEqual(options['port'], '4949')
         self.assertEqual(options['config'], '/etc/freetacacs.conf')
+        self.assertEqual(options['log'], f'{self.data_dir}/log/freetacacs.log')
         self.assertTrue(options['debug'])

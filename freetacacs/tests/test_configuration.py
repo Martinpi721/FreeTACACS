@@ -37,8 +37,6 @@ class TestConfiguration(unittest.TestCase):
         """Test we can handle a missing configuration file"""
 
         required_cfg = {
-                         'log_type'     : 'file',
-                         'log_file'    : '/var/log/freetacacs/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/freetacacs/shared_secrets.json',
                          'auth_type'   : 'pam',
@@ -73,8 +71,6 @@ class TestConfiguration(unittest.TestCase):
         """Test we handle a yaml file with valid data set"""
 
         required_cfg = {
-                         'log_type'     : 'file',
-                         'log_file'    : '/var/log/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/shared_secrets.json',
                          'auth_type': 'pam',
@@ -92,8 +88,6 @@ class TestConfiguration(unittest.TestCase):
         """Test we handle a yaml file with valid data set"""
 
         required_cfg = {
-                         'log_type'     : 'file',
-                         'log_file'    : '/var/log/freetacacs.log',
                          'secrets_type': 'file',
                          'secrets_file': '/etc/shared_secrets.json',
                          'auth_type': 'pam',
@@ -125,8 +119,6 @@ class TestValidConfig(unittest.TestCase):
         """Test that the a configuration is valid"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
                  'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
                  'auth_type'   : 'pam',
@@ -153,42 +145,10 @@ class TestValidConfig(unittest.TestCase):
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
 
 
-    def test_invalid_log_type(self):
-        """Test that we can validate log_type"""
-
-        cfg = {
-                 'log_type'    : 'not_a_file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
-                 'secrets_type': 'file',
-                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
-                 'auth_type'   : 'pam',
-                 'author_type' : 'file',
-                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
-            }
-
-        # Initialise log capture
-        catcher = self.catcher
-
-        with self.assertRaises(ConfigTypeError) as e:
-            valid_config(cfg)
-
-        self.assertIn(str(e.exception), 'Config option log_type has invalid' \
-                                        ' value [not_a_file].')
-
-        # Extract the last log event from out log capture and test values
-        msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Config option log_type has invalid' \
-                                         ' value [not_a_file].')
-        self.assertEqual(msg['log_level'], LogLevel.debug)
-        self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
-
-
     def test_invalid_secrets_type(self):
         """Test that we can validate secrets_type"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'not_a_file',
                  'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
                  'auth_type'   : 'pam',
@@ -217,8 +177,6 @@ class TestValidConfig(unittest.TestCase):
         """Test that we can validate author_type"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
                  'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
                  'auth_type'   : 'pam',
@@ -247,8 +205,6 @@ class TestValidConfig(unittest.TestCase):
         """Test that we can validate auth_type"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
                  'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
                  'auth_type'   : 'not_pam',
@@ -273,44 +229,10 @@ class TestValidConfig(unittest.TestCase):
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
 
 
-    def test_missing_log_file(self):
-        """Test that log_file value exists"""
-
-        cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/missing.log',
-                 'secrets_type': 'file',
-                 'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
-                 'auth_type'   : 'pam',
-                 'author_type' : 'file',
-                 'author_file' : f'{self.data_dir}/etc/authorisations.json',
-            }
-
-        # Initialise log capture
-        catcher = self.catcher
-
-        with self.assertRaises(ConfigFileError) as e:
-            valid_config(cfg)
-
-        self.assertIn(str(e.exception), 'Unable to find file' \
-                      ' ./freetacacs/tests/data/configuration/log/missing.log' \
-                      ' specified by configuration option log_file.')
-
-        # Extract the last log event from out log capture and test values
-        msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Unable to find file' \
-                      ' ./freetacacs/tests/data/configuration/log/missing.log' \
-                      ' specified by configuration option log_file.')
-        self.assertEqual(msg['log_level'], LogLevel.debug)
-        self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
-
-
     def test_missing_share_secrets_file(self):
         """Test that secrets_file value exists"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
                  'secrets_file': f'{self.data_dir}/etc/missing.json',
                  'auth_type'   : 'pam',
@@ -341,8 +263,6 @@ class TestValidConfig(unittest.TestCase):
         """Test that author_file value exists"""
 
         cfg = {
-                 'log_type'    : 'file',
-                 'log_file'    : f'{self.data_dir}/log/freetacacs.log',
                  'secrets_type': 'file',
                  'secrets_file': f'{self.data_dir}/etc/shared_secrets.json',
                  'auth_type'   : 'pam',

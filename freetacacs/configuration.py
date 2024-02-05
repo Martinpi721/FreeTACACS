@@ -39,8 +39,6 @@ def load_config(file_path):
 
     # Set default configuration values
     configuration = {
-                       'log_type'     : 'file',
-                       'log_file'    : '/var/log/freetacacs/freetacacs.log',
                        'secrets_type': 'file',
                        'secrets_file': '/etc/freetacacs/shared_secrets.json',
                        'auth_type'   : 'pam',
@@ -84,14 +82,14 @@ def valid_config(cfg):
         log.debug(message=f'Configuration key [{key}] set to [{value}].')
 
         # Check each of these keys
-        if key == 'log_type' or key == 'secrets_type' or key == 'author_type':
+        if key == 'secrets_type' or key == 'author_type':
             if value != 'file':
                 msg = f'Config option {key} has invalid value [{value}].'
                 log.debug(message=msg)
                 raise ConfigTypeError(msg)
 
         # Check to see if file exists
-        if key == 'log_file' or key == 'secrets_file' or key == 'author_file':
+        if key == 'secrets_file' or key == 'author_file':
             if not os.path.exists(value):
                 msg = f'Unable to find file {value} specified by configuration' \
                       f' option {key}.'

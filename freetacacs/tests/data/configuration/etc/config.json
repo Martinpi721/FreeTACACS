@@ -1,6 +1,4 @@
 {
-  "log_dst": "file",
-  "log_file": "/var/log/freetacacs.log",
   "secrets_type": "file",
   "secrets_file": "/etc/shared_secrets.json",
   "auth_type": "pam",

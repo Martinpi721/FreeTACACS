@@ -1,13 +1,3 @@
-# log_dst
-# Where FreeTACACS will sent log events [file|syslog]
-# Default: file
-log_dst: file
-
-# log_file
-# Full path to the JSON formatted shared secrets file
-# Default: /var/log/freetacacs/freetacacs.log
-log_file: /var/log/freetacacs.log
-
 # secrets_type
 # Where FreeTACACS will load shared secrets from
 # Default: file
