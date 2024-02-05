@@ -9,11 +9,16 @@ Functions:
     None
 """
 
+import sys
 from zope.interface import Interface, implementer
 
+from twisted.python import log
 from twisted.internet import defer
 from twisted.application import service
-from twisted.logger import Logger
+from twisted.logger import (Logger,
+                            FilteringLogObserver,
+                            textFileLogObserver,
+                            LogLevelFilterPredicate)
 
 # Local imports
 from freetacacs.version import __version__
@@ -46,23 +51,30 @@ class TACACSPlusService(service.Service):
           None
         """
 
-        # import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
+        self.cfg = options
+
+        # Setup logging
+        fileObserver = textFileLogObserver(open(self.cfg['log'], 'a'))
+        if self.cfg['debug']:
+            predicate = LogLevelFilterPredicate(defaultLogLevel=log.LogLevel.debug)
+            fObserver = FilteringLogObserver(observer=fileObserver, predicates=predicate)
+            self.log = Logger(observer=fObserver)
+        else:
+            self.log = Logger(observer=fileObserver)
+
         self.log.info(f"FreeTACACS {__version__} starting up.")
 
         # Create a single configuration dictionary
-        self.cfg = options
         self.cfg.update(load_config(self.cfg['config']))
+
         try:
             valid_config(self.cfg)
         except (ConfigTypeError, ConfigFileError) as e:
-            self.log.critical(message=str(e))
-            self.stopService()
+            self.log.critical(str(e))
+            sys,exit(1)
 
         self.log.info(f"Configuration loaded from {self.cfg['config']}.")
-
-        # If debugging is enabled then log at bebug level
-        if self.cfg['debug']:
-            log.setLogLevel(log.DEBUG)
 
         # Load shared secrets from file if we are using a file backend
         if self.cfg['secrets_type'] == 'file':
