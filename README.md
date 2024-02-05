@@ -54,7 +54,16 @@ pip install .
 1. Run the TACACS+ server:
 
 ```bash
-sudo twistd -n freetacacs-start --config /etc/freetacacs/config.yaml
+# Run the service in the foreground
+sudo twistd --pidfile=/var/run/freetacacs.pid \
+            --nodaemon freetacacs-start \
+            --config /etc/freetacacs/config.yaml
+
+# Run the service as a daemon
+sudo twistd --syslog
+            --pidfile=/var/run/freetacacs.pid \
+            freetacacs-start \
+            --config /etc/freetacacs/config.yaml
 ```
 
 2. Configure network equipment to use server instance
