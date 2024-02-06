@@ -9,14 +9,13 @@ Functions:
 """
 
 import struct
-import logging
+from twisted.logger import Logger
 from dataclasses import dataclass
 import six
 
 # Local imports
 from freetacacs.flags import TAC_PLUS_PACKET_TYPES
 
-log = logging.getLogger(__name__)
 
 @dataclass
 class HeaderFields:
@@ -51,6 +50,10 @@ class HeaderFields:
 
 class TACACSPlusHeader:
     """Class to hand encoding/decoding the headers of TACACS+ packets"""
+
+    # Setup the logger
+    log = Logger()
+
 
     def __init__(self, fields, sequence_no=1, flags=0):
         """Initialise the packet object

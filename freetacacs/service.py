@@ -54,14 +54,14 @@ class TACACSPlusService(service.Service):
 #        import pdb; pdb.set_trace()
         self.cfg = options
 
-        # Setup logging
-        fileObserver = textFileLogObserver(open(self.cfg['log'], 'a'))
-        if self.cfg['debug']:
-            predicate = LogLevelFilterPredicate(defaultLogLevel=log.LogLevel.debug)
-            fObserver = FilteringLogObserver(observer=fileObserver, predicates=predicate)
-            self.log = Logger(observer=fObserver)
-        else:
-            self.log = Logger(observer=fileObserver)
+#        # Setup logging
+#        fileObserver = textFileLogObserver(open(self.cfg['log'], 'a'))
+#        if self.cfg['debug']:
+#            predicate = LogLevelFilterPredicate(defaultLogLevel=log.LogLevel.debug)
+#            fObserver = FilteringLogObserver(observer=fileObserver, predicates=predicate)
+#            self.log = Logger(observer=fObserver)
+#        else:
+#            self.log = Logger(observer=fileObserver)
 
         self.log.info(f"FreeTACACS {__version__} starting up.")
 

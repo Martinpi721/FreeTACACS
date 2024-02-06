@@ -6,7 +6,8 @@ secrets_type: file
 # secrets_file
 # Full path to the JSON formatted shared secrets file
 # Default: /etc/freetacacs/shared_secrets.json
-secrets_file: /etc/freetacacs/shared_secrets.json
+#secrets_file: /etc/freetacacs/shared_secrets.json
+secrets_file: ./etc/shared_secrets.json
 
 # auth_type
 # Authentication mechanism to use to authenticate TACACS users
@@ -21,4 +22,5 @@ author_type: file
 # author_file
 # Full path to the JSON formatted authorisations file
 # Default: /etc/freetacacs/authorisations.json
-author_file: /etc/freetacacs/authorisations.json
+#author_file: /etc/freetacacs/authorisations.json
+author_file: ./etc/authorisations.json

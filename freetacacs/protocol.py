@@ -9,6 +9,7 @@ Functions:
 """
 
 from twisted.internet import protocol
+from twisted.logger import Logger
 import six
 
 # Local imports
@@ -25,6 +26,10 @@ def catch_error(err):
 
 class TACACSPlusProtocol(protocol.Protocol):
     """Define the TACACS+ protocol"""
+
+    # Setup the logger
+    log = Logger()
+
 
     def __init__(self):
         """Create mapper dictionaries

@@ -9,15 +9,13 @@ Functions:
     None
 """
 import struct
-import logging
 from dataclasses import dataclass
+from twisted.logger import Logger
 import six
 
 # Local imports
 from freetacacs import flags
 from freetacacs.packet import TACACSPlusPacket as Packet
-
-log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -34,20 +32,20 @@ class AuthenStartFields:
 
     # Validate the data
     def __post_init__(self):
-        if not isinstance(self.action, int) and not isinstance(self.action,
-                                                               str):
+        if not isinstance(self.action,
+                          int) and not isinstance(self.action, str):
             raise TypeError('Action should be of type int')
 
-        if not isinstance(self.priv_lvl, int) and not isinstance(self.priv_lvl,
-                                                                 str):
+        if not isinstance(self.priv_lvl,
+                          int) and not isinstance(self.priv_lvl, str):
             raise TypeError('Priviledge Level should be of type int')
 
         if not isinstance(self.authen_type,
                           int) and not isinstance(self.authen_type, str):
             raise TypeError('Authentication Type should be of type int')
 
-        if not isinstance(self.service, int) and not isinstance(self.service,
-                                                                str):
+        if not isinstance(self.service,
+                          int) and not isinstance(self.service, str):
             raise TypeError('Service should be of type int')
 
         if not isinstance(self.user, str):
@@ -65,6 +63,10 @@ class AuthenStartFields:
 
 class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
+
+    # Setup the logger
+    log = Logger()
+
 
     @property
     def decode(self):
@@ -175,6 +177,10 @@ class AuthenReplyFields:
 class TACACSPlusAuthenReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet
     bodies"""
+
+    # Setup the logger
+    log = Logger()
+
 
     def __init__(self, header, body=six.b(''), fields=AuthenReplyFields(0, 0),
                  secret=None):
