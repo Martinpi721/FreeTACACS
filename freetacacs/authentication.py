@@ -34,20 +34,20 @@ class AuthenStartFields:
 
     # Validate the data
     def __post_init__(self):
-        if not isinstance(self.action, int) and not isinstance(self.action,
-                                                               str):
+        if not isinstance(self.action,
+                          int) and not isinstance(self.action, str):
             raise TypeError('Action should be of type int')
 
-        if not isinstance(self.priv_lvl, int) and not isinstance(self.priv_lvl,
-                                                                 str):
+        if not isinstance(self.priv_lvl,
+                          int) and not isinstance(self.priv_lvl, str):
             raise TypeError('Priviledge Level should be of type int')
 
         if not isinstance(self.authen_type,
                           int) and not isinstance(self.authen_type, str):
             raise TypeError('Authentication Type should be of type int')
 
-        if not isinstance(self.service, int) and not isinstance(self.service,
-                                                                str):
+        if not isinstance(self.service,
+                          int) and not isinstance(self.service, str):
             raise TypeError('Service should be of type int')
 
         if not isinstance(self.user, str):
