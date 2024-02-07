@@ -9,6 +9,7 @@ Functions:
 """
 
 from twisted.internet import protocol
+from twisted.logger import Logger
 import six
 
 # Local imports
@@ -26,6 +27,8 @@ def catch_error(err):
 class TACACSPlusProtocol(protocol.Protocol):
     """Define the TACACS+ protocol"""
 
+    log = Logger()
+
     def __init__(self):
         """Create mapper dictionaries
 
@@ -36,6 +39,12 @@ class TACACSPlusProtocol(protocol.Protocol):
         Returns:
           None
         """
+
+        # Client connection details
+        self._nas_ip = None
+        self._nas_port = None
+        self._server_ip = None
+        self._server_port = None
 
         self.packet_type_mapper = {
                 'TAC_PLUS_AUTHEN': self._authentication,
@@ -234,6 +243,29 @@ class TACACSPlusProtocol(protocol.Protocol):
         else:
             print('acct response')
 
+
+    def connectionMade(self):
+        """Called when a connection is made to the server instance
+
+        Convienient time to collect some connection information
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns
+          None
+        """
+
+        # Get the local IP address
+        self._server_ip = self.transport.getHost().host
+        self._server_port = self.transport.getHost().port
+
+        # Get the IP address of the connecting client
+        self._nas_ip = self.transport.getPeer().host
+        self._nas_port = self.transport.getPeer().port
+
+
     def dataReceived(self, data):
         """Recieve data from network
 
@@ -245,12 +277,25 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Get the IP address of the TACACS+ client
-        self.ip_address = self.transport.getPeer().host
-
         # Decode the TACACS+ packet header
-        raw = six.BytesIO(data)
-        rx_header = Header.decode(raw.read(12))
+        try:
+            raw = six.BytesIO(data)
+            rx_header = Header.decode(raw.read(12))
+        except (TypeError, ValueError) as e:
+            msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
+                  f' {self._server_ip}:{self._server_port}, {str(e)}'
+            self.log.error(msg,
+                           nas_ip=self._nas_ip,
+                           nas_port=self._nas_port,
+                           server_ip=self._server_ip,
+                           session_id='',
+                           sequence_no='',
+                           server_port=self._server_port,
+                           text=str(e))
+
+            # Reset the connection the client
+            self.transport.loseConnection()
+            return
 
         # Use function mapper dict to decide how we handle the packet
         self.packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
