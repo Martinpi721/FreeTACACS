@@ -1,0 +1,17 @@
+[
+    {
+      "user": "jsmith",
+      "enable": {
+        "cleartext": "password"
+      },
+      "chap": {
+        "cleartext": "password"
+      }
+    },
+    {
+      "user": "jdoe",
+      "login": {
+        "des": "l5c2fHiF21uZ6"
+      }
+    }
+]
