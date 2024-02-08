@@ -46,7 +46,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         self._server_ip = None
         self._server_port = None
 
-        self.packet_type_mapper = {
+        self._packet_type_mapper = {
                 'TAC_PLUS_AUTHEN': self._authentication,
                 0x01             : self._authentication,
                 'TAC_PLUS_AUTHOR': self._authorisation,
@@ -55,7 +55,7 @@ class TACACSPlusProtocol(protocol.Protocol):
                 0x03             : self._accounting,
         }
 
-        self.auth_type_mapper = {
+        self._auth_type_mapper = {
                 'TAC_PLUS_AUTHEN_TYPE_ASCII'   : self._auth_plain,
                 0x01                           : self._auth_plain,
                 'TAC_PLUS_AUTHEN_TYPE_PAP'     : self._auth_pap,
@@ -67,6 +67,7 @@ class TACACSPlusProtocol(protocol.Protocol):
                 'TAC_PLUS_AUTHEN_TYPE_MSCHAPV2': self._auth_mschapv2,
                 0x05                           : self._auth_mschapv2,
         }
+
 
     def _auth_plain(self, rx_header, rx_body):
         """Process ascii authentication
@@ -82,6 +83,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         self._authen_reply_error(rx_header, rx_body)
 
+
     def _auth_pap(self, rx_header, rx_body):
         """Process pap authentication
 
@@ -95,6 +97,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         self._authen_reply_error(rx_header, rx_body)
+
 
     def _auth_chap(self, rx_header, rx_body):
         """Process chap authentication
@@ -110,6 +113,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         self._authen_reply_error(rx_header, rx_body)
 
+
     def _auth_mschap(self, rx_header, rx_body):
         """Process mschap authentication
 
@@ -123,6 +127,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         """
 
         self._authen_reply_error(rx_header, rx_body)
+
 
     def _auth_mschapv2(self, rx_header, rx_body):
         """Process mschapv2 authentication
@@ -138,6 +143,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         self._authen_reply_error(rx_header, rx_body)
 
+
     def _authen_reply_error(self, rx_header, rx_body):
         """Process mschapv2 authentication
 
@@ -150,7 +156,7 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        d = self.factory.get_shared_secret(self.ip_address)
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addErrback(catch_error)
 
         def send_error(value):
@@ -172,6 +178,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         d.addCallback(send_error)
 
+
     def _authentication(self, rx_header, raw_body):
         """Process authentication packets
 
@@ -184,7 +191,7 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        d = self.factory.get_shared_secret(self.ip_address)
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addErrback(catch_error)
 
         def decode_packet(value):
@@ -205,6 +212,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         d.addCallback(decode_packet)
 
+
     def _authorisation(self, rx_header, raw_body):
         """Process authorisation packets
 
@@ -223,6 +231,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             print('author request')
         else:
             print('author response')
+
 
     def _accounting(self, rx_header, raw_body):
         """Process accounting packets
@@ -281,9 +290,11 @@ class TACACSPlusProtocol(protocol.Protocol):
         try:
             raw = six.BytesIO(data)
             rx_header = Header.decode(raw.read(12))
-        except (TypeError, ValueError) as e:
+        # Packet isn't byte encoded
+        except TypeError as e:
             msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
-                  f' {self._server_ip}:{self._server_port}, {str(e)}'
+                  f' {self._server_ip}:{self._server_port} sent a packet' \
+                   ' that is not byte encoded. Closing connection.'
             self.log.error(msg,
                            nas_ip=self._nas_ip,
                            nas_port=self._nas_port,
@@ -291,11 +302,48 @@ class TACACSPlusProtocol(protocol.Protocol):
                            session_id='',
                            sequence_no='',
                            server_port=self._server_port,
-                           text=str(e))
+                           text=msg)
 
-            # Reset the connection the client
+            # Reset the connection
+            self.transport.loseConnection()
+            return
+
+        # Packet byte encoded but not a TACACS+ packet
+        except ValueError as e:
+            msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
+                  f' {self._server_ip}:{self._server_port} sent a packet' \
+                   ' with a header not meeting TACACS+ specifications.'\
+                   ' Closing connection.'
+            self.log.error(msg,
+                           nas_ip=self._nas_ip,
+                           nas_port=self._nas_port,
+                           server_ip=self._server_ip,
+                           session_id='',
+                           sequence_no='',
+                           server_port=self._server_port,
+                           text=msg)
+
+            # Reset the connection
             self.transport.loseConnection()
             return
 
         # Use function mapper dict to decide how we handle the packet
-        self.packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
+        try:
+            self._packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
+        # Not a recognised TACACS+ packet type
+        except KeyError as e:
+            msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
+                  f' {self._server_ip}:{self._server_port} sent a packet' \
+                   ' with a invalid header. Closing connection.'
+            self.log.error(msg,
+                           nas_ip=self._nas_ip,
+                           nas_port=self._nas_port,
+                           server_ip=self._server_ip,
+                           session_id='',
+                           sequence_no='',
+                           server_port=self._server_port,
+                           text=msg)
+
+            # Reset the connection
+            self.transport.loseConnection()
+            return
