@@ -229,8 +229,8 @@ class TACACSPlusHeader:
             header = HeaderFields(version, packet_type, session_id, length,
                                   sequence_no, flags)
         except struct.error as e:
-            raise ValueError('Unable to extract header. TACACS+ client/server' \
-                             ' shared key probably does not match') from e
+            raise ValueError('Unable to extract header.' \
+                             ' Header does meet TACACS+ encoding standards.') from e
         return header
 
 

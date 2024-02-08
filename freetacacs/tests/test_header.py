@@ -234,8 +234,8 @@ class TestTACACSPlusHeader:
         with pytest.raises(ValueError) as e:
             Header.decode(encoded_header)
 
-        assert str(e.value) == 'Unable to extract header. TACACS+' \
-                               ' client/server shared key probably does not match'
+        assert str(e.value) == 'Unable to extract header. Header does meet' \
+                               ' TACACS+ encoding standards.'
 
 
     def test_decode_header_with_invalid_encoding(self):
