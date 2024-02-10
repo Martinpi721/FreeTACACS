@@ -77,8 +77,24 @@ class TACACSPlusAuthenStart(Packet):
           None
         """
 
+        # 1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8
+        #
+        # +----------------+----------------+----------------+----------------+
+        # |    action      |    priv_lvl    |  authen_type   |     service    |
+        # +----------------+----------------+----------------+----------------+
+        # |    user len    |    port len    |  rem_addr len  |    data len    |
+        # +----------------+----------------+----------------+----------------+
+        # |    user ...
+        # +----------------+----------------+----------------+----------------+
+        # |    port ...
+        # +----------------+----------------+----------------+----------------+
+        # |    rem_addr ...
+        # +----------------+----------------+----------------+----------------+
+        # |    data...
+        # +----------------+----------------+----------------+----------------+
+
         # Extend our parent class __init__ method
-        super(TACACSPlusAuthenStart, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Initialise the packet body fields
         self._action = None
@@ -102,22 +118,6 @@ class TACACSPlusAuthenStart(Packet):
         Returns:
           fields(dict): containing body field name/value pairs
         """
-
-        # 1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8
-        #
-        # +----------------+----------------+----------------+----------------+
-        # |    action      |    priv_lvl    |  authen_type   |     service    |
-        # +----------------+----------------+----------------+----------------+
-        # |    user len    |    port len    |  rem_addr len  |    data len    |
-        # +----------------+----------------+----------------+----------------+
-        # |    user ...
-        # +----------------+----------------+----------------+----------------+
-        # |    port ...
-        # +----------------+----------------+----------------+----------------+
-        # |    rem_addr ...
-        # +----------------+----------------+----------------+----------------+
-        # |    data...
-        # +----------------+----------------+----------------+----------------+
 
         fields = {}
 
@@ -261,7 +261,7 @@ class TACACSPlusAuthenReply(Packet):
         # |           data ...
         # +----------------+----------------+
 
-        # Extend the Packet base class
+        # Extend our parent class __init__ method
         super().__init__(header, body, secret)
 
         # If body is not empty nothing more is required from __init__
