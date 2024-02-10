@@ -66,6 +66,31 @@ class AuthenStartFields:
 class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
 
+    def __init__(self, *args, **kwargs):
+        """Initialise a TACACS+ Authentication Start packet body
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        # Extend our parent class __init__ method
+        super(TACACSPlusAuthenStart, self).__init__(*args, **kwargs)
+
+        # Initialise the packet body fields
+        self._action = None
+        self._priv_lvl = None
+        self._authen_type = None
+        self._service = None
+        self._user_len = None
+        self._port_len = None
+        self._rem_addr_len = None
+        self._data_len = None
+
+
     @property
     def decode(self):
         """Decode a TACAS+ Authentication start packet body
@@ -105,14 +130,18 @@ class TACACSPlusAuthenStart(Packet):
 
         # Decode the packet body
         try:
-            action, priv_lvl = struct.unpack('BB', body.read(2))
-            authen_type, service = struct.unpack('BB', body.read(2))
-            user_len, port_len, rem_addr_len, data_len = struct.unpack('BBBB',
-                                                                       body.read(4))
-            user = body.read(user_len).decode('UTF-8')
-            port = body.read(port_len).decode('UTF-8')
-            remote_address = body.read(rem_addr_len).decode('UTF-8')
-            data = body.read(data_len).decode('UTF-8')
+            self._action, self._priv_lvl = struct.unpack('BB', body.read(2))
+            self._authen_type, self._service = struct.unpack('BB', body.read(2))
+
+            (self._user_len,
+             self._port_len,
+             self._rem_addr_len,
+             self._data_len) = struct.unpack('BBBB', body.read(4))
+
+            self._user = body.read(self._user_len).decode('UTF-8')
+            self._port = body.read(self._port_len).decode('UTF-8')
+            self._remote_address = body.read(self._rem_addr_len).decode('UTF-8')
+            self._data = body.read(self._data_len).decode('UTF-8')
         except ValueError as e:
             raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
                              ' client/server shared key probably does not' \
@@ -120,33 +149,56 @@ class TACACSPlusAuthenStart(Packet):
 
         # Convert authentication action flag codes back to human readable strings
         try:
-            result = filter(lambda item: item[1] == action,
+            result = filter(lambda item: item[1] == self._action,
                                      flags.TAC_PLUS_AUTHEN_ACTIONS.items())
-            action = list(result)[0][0]
+            self._action = list(result)[0][0]
 
             # Convert priveledge level flag codes back to human readable strings
-            result = filter(lambda item: item[1] == priv_lvl,
+            result = filter(lambda item: item[1] == self._priv_lvl,
                                          flags.TAC_PLUS_PRIV_LVL.items())
-            priv_lvl = list(result)[0][0]
+            self._priv_lvl = list(result)[0][0]
 
             # Convert authentication type flag codes back to human readable
             # strings
-            result = filter(lambda item: item[1] == authen_type,
+            result = filter(lambda item: item[1] == self._authen_type,
                                          flags.TAC_PLUS_AUTHEN_TYPES.items())
-            authen_type = list(result)[0][0]
+            self._authen_type = list(result)[0][0]
 
             # Convert authentication service flag codes back to
             # human readable strings
-            result = filter(lambda item: item[1] == service,
+            result = filter(lambda item: item[1] == self._service,
                                          flags.TAC_PLUS_AUTHEN_SVC.items())
-            service = list(result)[0][0]
+            self._service = list(result)[0][0]
         except IndexError as e:
             raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
                              ' client/server shared key probably does not' \
                              ' match') from e
 
-        return AuthenStartFields(action, priv_lvl, authen_type, service, user,
-                                 port, remote_address, data)
+        return AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
+                                 self._service, self._user, self._port,
+                                 self._remote_address, self._data)
+
+
+    def __str__(self):
+        """String representation of the TACACS+ packet
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(str): containing the TACACS+ packet body
+        """
+
+        # Build the string representation
+        packet = f'action: {self._action}, priv_lvl: {self._priv_lvl},' \
+                 f' authen_type: {self._authen_type}, service: {self._service},' \
+                 f' user_len: {self._user_len}, port_len: {self._port_len},' \
+                 f' rem_addr_len: {self._rem_addr_len}, data_len: {self._data_len},' \
+                 f' user: {self._user}, port: {self._port},' \
+                 f' rem_addr: {self._remote_address}, data: {self._data}'
+
+        return packet
 
 
 @dataclass
@@ -251,3 +303,5 @@ class TACACSPlusAuthenReply(Packet):
         self._header.length = len(self._body)
 
         return None
+
+

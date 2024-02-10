@@ -31,6 +31,13 @@ class TestAuthenStart:
         session_id = 2620865572
         length = 0
 
+        # What should be returned when we call __str__ on object
+        required_str = 'action: TAC_PLUS_AUTHEN_LOGIN, priv_lvl:' \
+                ' TAC_PLUS_PRIV_LVL_MIN, authen_type: TAC_PLUS_AUTHEN_TYPE_PAP,' \
+                ' service: TAC_PLUS_AUTHEN_SVC_LOGIN, user_len: 4, port_len: 11,' \
+                ' rem_addr_len: 13, data_len: 4, user: test, port: python_tty0,' \
+                ' rem_addr: python_device, data: test'
+
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
@@ -51,6 +58,7 @@ class TestAuthenStart:
         assert fields.remote_address == 'python_device'
         assert fields.data == 'test'
         assert pkt.length == 40
+        assert str(pkt) == required_str
 
 
     def test_incorrect_session_id(self):
