@@ -22,7 +22,7 @@ class TACACSPlusPacket:
     """
 
     def __init__(self, header, body, secret=None):
-        """Initialise a TACAS+ packet body
+        """Initialise a TACACS+ packet body
 
         Args:
           header(obj): instance of a TACACSPlusHeader class
