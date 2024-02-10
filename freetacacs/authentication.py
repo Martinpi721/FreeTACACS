@@ -264,6 +264,14 @@ class TACACSPlusAuthenReply(Packet):
         # Extend our parent class __init__ method
         super().__init__(header, body, secret)
 
+        # Initialise the packet body fields
+        self._status = None
+        self._flags = None
+        self._server_msg_len = None
+        self._server_msg = None
+        self._data_len = None
+        self._data = None
+
         # If body is not empty nothing more is required from __init__
         if len(self._body) > 0:
             return None
@@ -274,7 +282,9 @@ class TACACSPlusAuthenReply(Packet):
             self._status = fields.status
             self._flags = fields.flags
             self._server_msg = fields.server_msg
+            self._server_msg_len = len(self._server_msg)
             self._data = fields.data
+            self._data_len = len(self._data)
         except TypeError:
             raise
 
@@ -283,7 +293,7 @@ class TACACSPlusAuthenReply(Packet):
             # B = unsigned char
             self._body = struct.pack('BB', self._status, self._flags)
             # !H = network-order (big-endian) unsigned short
-            self._body += struct.pack('!HH', len(self._server_msg), len(self._data))
+            self._body += struct.pack('!HH', self._server_msg_len, self._data_len)
 
             # Byte encode
             server_msg = six.b(self._server_msg)
@@ -305,3 +315,21 @@ class TACACSPlusAuthenReply(Packet):
         return None
 
 
+    def __str__(self):
+        """String representation of the TACACS+ packet
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(str): containing the TACACS+ packet body
+        """
+
+        # Build the string representation
+        packet = f'status: {self._status}, flags: {self._flags},' \
+                 f' server_msg_len: {self._server_msg_len}, data_len:' \
+                 f' {self._data_len}, server_msg: {self._server_msg},' \
+                 f' data: {self._data}'
+
+        return packet

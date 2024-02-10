@@ -58,6 +58,8 @@ class TestAuthenReply:
         pkt = AuthenReplyPacket(header, raw.read(), 'test')
 
         assert isinstance(pkt, AuthenReplyPacket)
+        assert str(pkt) == 'status: None, flags: None, server_msg_len: None,' \
+                           ' data_len: None, server_msg: None, data: None'
 
 
     @pytest.mark.skip(reason="Currently no method to trigger this")
@@ -151,3 +153,5 @@ class TestAuthenReply:
         pkt = AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert isinstance(pkt, AuthenReplyPacket)
+        assert str(pkt) == 'status: 0, flags: 0, server_msg_len: 4,' \
+                           ' data_len: 4, server_msg: test, data: test'
