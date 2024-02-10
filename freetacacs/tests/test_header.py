@@ -140,14 +140,14 @@ class TestTACACSPlusHeader:
         """Test we can handle a invalid packet type"""
 
         version = 0x01
-        packet_type = 'auth'
+        packet_type = {}
         session_id = 0x01
         length = 1
 
         with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'Packet Type should be of type int'
+        assert str(e.value) == 'Packet Type should be of type string or int'
 
 
     def test_create_instance_invalid_session_id(self):
@@ -219,7 +219,7 @@ class TestTACACSPlusHeader:
         fields = Header.decode(encoded_header)
 
         assert fields.version == 1
-        assert fields.packet_type == 1
+        assert fields.packet_type == 'TAC_PLUS_AUTHEN'
         assert fields.session_id == 1
         assert fields.length == 1
         assert fields.sequence_no == 1

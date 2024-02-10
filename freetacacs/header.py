@@ -33,8 +33,9 @@ class HeaderFields:
         if not isinstance(self.version, int):
             raise TypeError('Version should be of type int')
 
-        if not isinstance(self.packet_type, int):
-            raise TypeError('Packet Type should be of type int')
+        if not isinstance(self.packet_type,
+                          int) and not isinstance(self.packet_type, str):
+            raise TypeError('Packet Type should be of type string or int')
 
         if not isinstance(self.session_id, int):
             raise TypeError('Session Id should be of type int')
@@ -226,12 +227,21 @@ class TACACSPlusHeader:
             # !I = network-order (big-endian) unsigned int
             session_id, length = struct.unpack('!II', raw.read(8))
 
-            header = HeaderFields(version, packet_type, session_id, length,
-                                  sequence_no, flags)
         except struct.error as e:
             raise ValueError('Unable to extract header.' \
                              ' Header does meet TACACS+ encoding standards.') from e
-        return header
+
+        # Convert packet type flag code back to human readable strings
+        try:
+            result = filter(lambda item: item[1] == packet_type,
+                                         TAC_PLUS_PACKET_TYPES.items())
+            packet_type = list(result)[0][0]
+        except IndexError as e:
+            raise ValueError('Unable to extract header.' \
+                             ' Header does meet TACACS+ encoding standards.') from e
+
+        return HeaderFields(version, packet_type, session_id, length,
+                            sequence_no, flags)
 
 
     def __str__(self):
