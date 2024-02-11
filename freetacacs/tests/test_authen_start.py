@@ -134,3 +134,43 @@ class TestAuthenStart:
 
         assert str(e.value) == 'Unable to decode AuthenSTART packet. TACACS+' \
                                ' client/server shared key probably does not match'
+
+
+    def test_authen_start_fields_string(self):
+        """Test we can get a string representation of authen start fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, service=1,
+                                   user='test', port='1234', remote_address='test',
+                                   data='testing123')
+
+        assert str(fields) == 'action: 1, priv_lvl: 1, authen_type: 1, service: 1,' \
+                              ' user: test, port: 1234, remote_address: test,' \
+                              ' data: testing123'
+
+
+    def test_authen_start_fields_dict(self):
+        """Test we can get a dict representation of authen start fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, service=1,
+                                   user='test', port='1234', remote_address='test',
+                                   data='testing123')
+
+        assert vars(fields) == {'action': 1, 'priv_lvl': 1, 'authen_type': 1,
+                                'service': 1, 'user': 'test', 'port': '1234',
+                                'remote_address': 'test', 'data': 'testing123'}

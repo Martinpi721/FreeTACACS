@@ -63,6 +63,26 @@ class AuthenStartFields:
             raise TypeError('Data should be of type string')
 
 
+    def __str__(self):
+        """String representation of the auth start fields
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          fields(str): containing the auth start fields
+        """
+
+        # Build the string representation
+        fields = f'action: {self.action}, priv_lvl: {self.priv_lvl},' \
+                 f' authen_type: {self.authen_type}, service: {self.service},' \
+                 f' user: {self.user}, port: {self.port},' \
+                 f' remote_address: {self.remote_address}, data: {self.data}'
+
+        return fields
+
+
 class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
 
