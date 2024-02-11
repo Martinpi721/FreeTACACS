@@ -81,7 +81,6 @@ class TestAuthenReply:
         assert str(e.value) == 'Status should be of type int'
 
 
-    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_flags(self):
         """Test we handle passing a invalid flags field type"""
 
@@ -93,14 +92,13 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 'invalid', 'test', 'test')
         with pytest.raises(TypeError) as e:
+            fields = AuthenReplyFields(status=0, flags='invalid', server_msg='test', data='test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Flags should be of type int'
 
 
-    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_server_msg(self):
         """Test we handle passing a invalid server_msg field type"""
 
@@ -112,14 +110,13 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 0, 0, 'test')
         with pytest.raises(TypeError) as e:
+            fields = AuthenReplyFields(status=0, flags=0, server_msg=0, data='test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Server Message should be of type string'
 
 
-    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_data(self):
         """Test we handle passing a invalid data field type"""
 
@@ -131,8 +128,8 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 0, 'test', 0)
         with pytest.raises(TypeError) as e:
+            fields = AuthenReplyFields(status=0, flags=0, server_msg='test', data=0)
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Data should be of type string'
