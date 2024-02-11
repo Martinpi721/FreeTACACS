@@ -203,8 +203,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                 rx_body_fields = pkt.decode
 
                 # Use function mapper dict to decide how we handle the packet
-                self.auth_type_mapper[rx_body_fields.authen_type](rx_header,
-                                                                  rx_body_fields)
+                self._auth_type_mapper[rx_body_fields.authen_type](rx_header,
+                                                                   rx_body_fields)
 
             # AuthenCONTINUE
             else:
@@ -274,6 +274,14 @@ class TACACSPlusProtocol(protocol.Protocol):
         self._nas_ip = self.transport.getPeer().host
         self._nas_port = self.transport.getPeer().port
 
+        # Create a connection object
+        self._conn  = {
+                       'server_ip': self._server_ip,
+                       'server_port': self._server_port,
+                       'nas_ip': self._nas_ip,
+                       'nas_port': self._nas_port,
+                      }
+
 
     def dataReceived(self, data):
         """Recieve data from network
@@ -295,14 +303,12 @@ class TACACSPlusProtocol(protocol.Protocol):
             msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
                   f' {self._server_ip}:{self._server_port} sent a packet' \
                    ' that is not byte encoded. Closing connection.'
-            self.log.error(msg,
-                           nas_ip=self._nas_ip,
-                           nas_port=self._nas_port,
-                           server_ip=self._server_ip,
-                           session_id='',
-                           sequence_no='',
-                           server_port=self._server_port,
-                           text=msg)
+
+            kwargs = self._conn
+            kwargs['session_id'] = ''
+            kwargs['sequence_no'] = ''
+            kwargs['text'] = msg
+            self.log.error(msg, **kwargs)
 
             # Reset the connection
             self.transport.loseConnection()
@@ -314,14 +320,12 @@ class TACACSPlusProtocol(protocol.Protocol):
                   f' {self._server_ip}:{self._server_port} sent a packet' \
                    ' with a header not meeting TACACS+ specifications.'\
                    ' Closing connection.'
-            self.log.error(msg,
-                           nas_ip=self._nas_ip,
-                           nas_port=self._nas_port,
-                           server_ip=self._server_ip,
-                           session_id='',
-                           sequence_no='',
-                           server_port=self._server_port,
-                           text=msg)
+
+            kwargs = self._conn
+            kwargs['session_id'] = ''
+            kwargs['sequence_no'] = ''
+            kwargs['text'] = msg
+            self.log.error(msg, **kwargs)
 
             # Reset the connection
             self.transport.loseConnection()
@@ -335,14 +339,11 @@ class TACACSPlusProtocol(protocol.Protocol):
             msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
                   f' {self._server_ip}:{self._server_port} sent a packet' \
                    ' with a invalid header. Closing connection.'
-            self.log.error(msg,
-                           nas_ip=self._nas_ip,
-                           nas_port=self._nas_port,
-                           server_ip=self._server_ip,
-                           session_id='',
-                           sequence_no='',
-                           server_port=self._server_port,
-                           text=msg)
+
+            kwargs = vars(rx_header)
+            kwargs.update(self._conn)
+            kwargs['text'] = msg
+            self.log.error(msg, **kwargs)
 
             # Reset the connection
             self.transport.loseConnection()

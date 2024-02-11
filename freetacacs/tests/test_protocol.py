@@ -63,7 +63,8 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can handle being sent invalid packets"""
 
         required_msg = 'NAS 192.168.1.1:54321 connected to 10.0.0.1:12345 sent' \
-                       ' a packet with a invalid header. Closing connection.'
+                       ' a packet with a header not meeting TACACS+' \
+                       ' specifications. Closing connection.'
 
         with capturedLogs() as events:
             self.protocol.dataReceived(b'not_a_tacacs_packet')
