@@ -224,6 +224,24 @@ class AuthenReplyFields:
             raise TypeError('Data should be of type string')
 
 
+    def __str__(self):
+        """String representation of the auth reply fields
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          fields(str): containing the auth reply fields
+        """
+
+        # Build the string representation
+        fields = f'status: {self.status}, flags: {self.flags},' \
+                 f' server_msg: {self.server_msg}, data: {self.data}'
+
+        return fields
+
+
 class TACACSPlusAuthenReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet
     bodies"""

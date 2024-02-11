@@ -155,3 +155,36 @@ class TestAuthenReply:
         assert isinstance(pkt, AuthenReplyPacket)
         assert str(pkt) == 'status: 0, flags: 0, server_msg_len: 4,' \
                            ' data_len: 4, server_msg: test, data: test'
+
+
+    def test_authen_reply_fields_string(self):
+        """Test we can get a string representation of authen reply fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenReplyFields(0, 0, 'test', 'test')
+
+        assert str(fields) == 'status: 0, flags: 0, server_msg: test, data: test'
+
+
+    def test_authen_reply_fields_dict(self):
+        """Test we can get a dict representation of authen reply fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenReplyFields(0, 0, 'test', 'test')
+
+        assert vars(fields) == {'status': 0, 'flags': 0, 'server_msg': 'test',
+                                'data': 'test'}
