@@ -347,3 +347,31 @@ class TestTACACSPlusHeader:
         header.length = 20
 
         assert header.length == 20
+
+
+    def test_header_fields_string(self):
+        """Test we can get a string representation of header fields"""
+
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
+
+        header = HeaderFields(version, packet_type, session_id, length)
+
+        assert str(header) == 'version: 1, packet_type: 3, session_id: 123,' \
+                              ' length: 1, sequence_no: 1, flags: 0'
+
+
+    def test_header_fields_dict(self):
+        """Test we can get a string representation of header fields"""
+
+        version = 0x01
+        packet_type = flags.TAC_PLUS_ACCT
+        session_id = 123
+        length = 1
+
+        header = HeaderFields(version, packet_type, session_id, length)
+
+        assert vars(header) == {'version': 1, 'session_id': 123, 'length': 1,
+                                'packet_type': 3, 'sequence_no': 1, 'flags': 0}

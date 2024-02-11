@@ -50,6 +50,22 @@ class HeaderFields:
             raise TypeError('Flags should be of type int')
 
 
+    def __str__(self):
+        """String representation of the header fields
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          fields(str): containing the header fields
+        """
+
+        return f'version: {self.version}, packet_type: {self.packet_type},' \
+               f' session_id: {self.session_id}, length: {self.length},' \
+               f' sequence_no: {self.sequence_no}, flags: {self.flags}'
+
+
 class TACACSPlusHeader:
     """Class to hand encoding/decoding the headers of TACACS+ packets"""
 
