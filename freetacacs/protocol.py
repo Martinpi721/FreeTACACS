@@ -331,20 +331,6 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.transport.loseConnection()
             return
 
-        # Use function mapper dict to decide how we handle the packet
-        try:
-            self._packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
-        # Not a recognised TACACS+ packet type
-        except KeyError as e:
-            msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
-                  f' {self._server_ip}:{self._server_port} sent a packet' \
-                   ' with a invalid header. Closing connection.'
-
-            kwargs = vars(rx_header)
-            kwargs.update(self._conn)
-            kwargs['text'] = msg
-            self.log.error(msg, **kwargs)
-
-            # Reset the connection
-            self.transport.loseConnection()
-            return
+        # NOTE: No need to trap for a keyerror as we can't get here as we
+        # already validated header packet type in Header.decode above
+        self._packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
