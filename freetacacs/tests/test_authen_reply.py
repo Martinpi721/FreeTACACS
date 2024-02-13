@@ -62,7 +62,6 @@ class TestAuthenReply:
                            ' data_len: None, server_msg: None, data: None'
 
 
-    @pytest.mark.skip(reason="Currently no method to trigger this")
     def test_invalid_status(self):
         """Test we handle passing a invalid status field type"""
 
@@ -74,8 +73,8 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields('invalid', 0, 'test', 'test')
         with pytest.raises(TypeError) as e:
+            fields = AuthenReplyFields('invalid', 0, 'test', 'test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Status should be of type int'
