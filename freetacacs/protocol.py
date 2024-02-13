@@ -14,6 +14,7 @@ import six
 
 # Local imports
 from freetacacs import flags
+from freetacacs.misc import create_log_dict
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authentication import AuthenReplyFields
@@ -21,6 +22,7 @@ from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
 
 def catch_error(err):
+    print(err)
     return "Internal error in server"
 
 
@@ -69,114 +71,270 @@ class TACACSPlusProtocol(protocol.Protocol):
         }
 
 
-    def _auth_plain(self, rx_header, rx_body):
+    def _auth_plain(self, rx_header_fields, rx_body_fields):
         """Process ascii authentication
 
         Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
+          rx_header_fields(obj): dataclass containing header fields
+          rx_body_fields(obj): dataclass containing body fields
         Exceptions:
           None
         Returns:
           None
         """
 
-        self._authen_reply_error(rx_header, rx_body)
+        # Check the sequence no. a client sequence no. should always be odd
+        # meaning any response must be even. In addition the max sequence no.
+        # to meet the RFC specification is 255.
+        if rx_header.sequence_no % 2 == 0:
+            self.transport.loseConnection()
+            return
 
+#        if rx_header.sequence_no > 255:
+#            self.transport.loseConnection()
+#            return
 
-    def _auth_pap(self, rx_header, rx_body):
-        """Process pap authentication
-
-        Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
-        Exceptions:
-          None
-        Returns:
-          None
-        """
-
-        self._authen_reply_error(rx_header, rx_body)
-
-
-    def _auth_chap(self, rx_header, rx_body):
-        """Process chap authentication
-
-        Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
-        Exceptions:
-          None
-        Returns:
-          None
-        """
-
-        self._authen_reply_error(rx_header, rx_body)
-
-
-    def _auth_mschap(self, rx_header, rx_body):
-        """Process mschap authentication
-
-        Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
-        Exceptions:
-          None
-        Returns:
-          None
-        """
-
-        self._authen_reply_error(rx_header, rx_body)
-
-
-    def _auth_mschapv2(self, rx_header, rx_body):
-        """Process mschapv2 authentication
-
-        Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
-        Exceptions:
-          None
-        Returns:
-          None
-        """
-
-        self._authen_reply_error(rx_header, rx_body)
-
-
-    def _authen_reply_error(self, rx_header, rx_body):
-        """Process mschapv2 authentication
-
-        Args:
-          rx_header(obj): dataclass containing header fields
-          rx_body(obj): dataclass containing body fields
-        Exceptions:
-          None
-        Returns:
-          None
-        """
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
 
         d = self.factory.get_shared_secret(self._nas_ip)
         d.addErrback(catch_error)
 
-        def send_error(value):
+        def send_response(value):
 
             # Build reply packet header
-            seq_no = rx_header.sequence_no + 1
-            tx_header = Header(HeaderFields(rx_header.version,
-                                            flags.TAC_PLUS_AUTHEN,
-                                            rx_header.session_id, 0), seq_no)
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHEN,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
 
-            # Build the error reply packet body
-            fields = AuthenReplyFields(flags.TAC_PLUS_AUTHEN_STATUS_ERROR, 0,
-                                       'Functionality NOT implemented')
-            reply = AuthenReplyPacket(tx_header, fields=fields,
-                                      secret=value)
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
+                                               server_msg='Functionality NOT implemented')
+
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
 
             # Write your packet to the transport layer
             self.transport.write(bytes(reply))
 
-        d.addCallback(send_error)
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(send_response)
+
+
+    def _auth_pap(self, rx_header_fields, rx_body_fields):
+        """Process pap authentication
+
+        Args:
+          rx_header_fields(obj): dataclass containing header fields
+          rx_body_fields(obj): dataclass containing body fields
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def send_response(value):
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHEN,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
+                                               server_msg='Functionality NOT implemented')
+
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(send_response)
+
+
+    def _auth_chap(self, rx_header_fields, rx_body_fields):
+        """Process chap authentication
+
+        Args:
+          rx_header_fields(obj): dataclass containing header fields
+          rx_body_fields(obj): dataclass containing body fields
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def send_response(value):
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHEN,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
+                                               server_msg='Functionality NOT implemented')
+
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(send_response)
+
+
+    def _auth_mschap(self, rx_header_fields, rx_body_fields):
+        """Process mschap authentication
+
+        Args:
+          rx_header_fields(obj): dataclass containing header fields
+          rx_body_fields(obj): dataclass containing body fields
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def send_response(value):
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHEN,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
+                                               server_msg='Functionality NOT implemented')
+
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(send_response)
+
+
+    def _auth_mschapv2(self, rx_header_fields, rx_body_fields):
+        """Process mschapv2 authentication
+
+        Args:
+          rx_header_fields(obj): dataclass containing header fields
+          rx_body_fields(obj): dataclass containing body fields
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def send_response(value):
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHEN,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
+                                               server_msg='Functionality NOT implemented')
+
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(send_response)
 
 
     def _authentication(self, rx_header, raw_body):
@@ -331,6 +489,20 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.transport.loseConnection()
             return
 
-        # NOTE: No need to trap for a keyerror as we can't get here as we
-        # already validated header packet type in Header.decode above
-        self._packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
+        # Use function mapper dict to decide how we handle the packet
+        try:
+            self._packet_type_mapper[rx_header.packet_type](rx_header, raw.read())
+        # Not a recognised TACACS+ packet type
+        except KeyError as e:
+            msg = f'NAS {self._nas_ip}:{self._nas_port} connected to' \
+                  f' {self._server_ip}:{self._server_port} sent a packet' \
+                   ' with a invalid header. Closing connection.'
+
+            kwargs = self._conn
+            kwargs.update(vars(rx_header))
+            kwargs['text'] = msg
+            self.log.error(msg, **kwargs)
+
+            # Reset the connection
+            self.transport.loseConnection()
+            return

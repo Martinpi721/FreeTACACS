@@ -63,8 +63,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can handle being sent invalid packets"""
 
         required_msg = 'NAS 192.168.1.1:54321 connected to 10.0.0.1:12345 sent' \
-                       ' a packet with a header not meeting TACACS+' \
-                       ' specifications. Closing connection.'
+                       ' a packet with a invalid header. Closing connection.'
 
         with capturedLogs() as events:
             self.protocol.dataReceived(b'not_a_tacacs_packet')
@@ -75,8 +74,8 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['server_port'], 12345)
         self.assertEqual(event['nas_ip'], '192.168.1.1')
         self.assertEqual(event['nas_port'], 54321)
-        self.assertEqual(event['session_id'], '')
-        self.assertEqual(event['sequence_no'], '')
+        self.assertEqual(event['session_id'], 1633645665)
+        self.assertEqual(event['sequence_no'], 116)
         self.assertEqual(event['log_level'], LogLevel.error)
         self.assertEqual(event['text'], required_msg)
         self.assertEqual(event['log_format'], required_msg)
