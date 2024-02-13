@@ -23,7 +23,7 @@ class HeaderFields:
     """TACACS+ header fields required to create packets"""
     version: int
     packet_type: int
-    session_id: str
+    session_id: int
     length: int = 0
     sequence_no: int = 1
     flags: int = 0
@@ -33,9 +33,8 @@ class HeaderFields:
         if not isinstance(self.version, int):
             raise TypeError('Version should be of type int')
 
-        if not isinstance(self.packet_type,
-                          int) and not isinstance(self.packet_type, str):
-            raise TypeError('Packet Type should be of type string or int')
+        if not isinstance(self.packet_type, int):
+            raise TypeError('Packet Type should be of type int')
 
         if not isinstance(self.session_id, int):
             raise TypeError('Session Id should be of type int')

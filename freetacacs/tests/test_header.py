@@ -147,7 +147,7 @@ class TestTACACSPlusHeader:
         with pytest.raises(TypeError) as e:
             Header(HeaderFields(version, packet_type, session_id, length))
 
-        assert str(e.value) == 'Packet Type should be of type string or int'
+        assert str(e.value) == 'Packet Type should be of type int'
 
 
     def test_create_instance_invalid_session_id(self):
