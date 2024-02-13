@@ -61,7 +61,14 @@ class HeaderFields:
           fields(str): containing the header fields
         """
 
-        return f'version: {self.version}, packet_type: {self.packet_type},' \
+        # Map the hex packet type to a text string
+        result = filter(lambda item: item[1] == self.packet_type,
+                                     TAC_PLUS_PACKET_TYPES.items())
+
+        # There will only ever be one result so take first tuple value from it
+        packet_type = list(result)[0][0]
+
+        return f'version: {self.version}, packet_type: {packet_type},' \
                f' session_id: {self.session_id}, length: {self.length},' \
                f' sequence_no: {self.sequence_no}, flags: {self.flags}'
 
@@ -244,15 +251,6 @@ class TACACSPlusHeader:
             session_id, length = struct.unpack('!II', raw.read(8))
 
         except struct.error as e:
-            raise ValueError('Unable to extract header.' \
-                             ' Header does meet TACACS+ encoding standards.') from e
-
-        # Convert packet type flag code back to human readable strings
-        try:
-            result = filter(lambda item: item[1] == packet_type,
-                                         TAC_PLUS_PACKET_TYPES.items())
-            packet_type = list(result)[0][0]
-        except IndexError as e:
             raise ValueError('Unable to extract header.' \
                              ' Header does meet TACACS+ encoding standards.') from e
 

@@ -74,9 +74,31 @@ class AuthenStartFields:
           fields(str): containing the auth start fields
         """
 
+        # Convert action codes back to human readable strings
+        result = filter(lambda item: item[1] == self.action,
+                                 flags.TAC_PLUS_AUTHEN_ACTIONS.items())
+        action = list(result)[0][0]
+
+        # Convert priveledge level flag codes back to human readable strings
+        result = filter(lambda item: item[1] == self.priv_lvl,
+                                     flags.TAC_PLUS_PRIV_LVL.items())
+        priv_lvl = list(result)[0][0]
+
+        # Convert authentication type flag codes back to human readable
+        # strings
+        result = filter(lambda item: item[1] == self.authen_type,
+                                     flags.TAC_PLUS_AUTHEN_TYPES.items())
+        authen_type = list(result)[0][0]
+
+        # Convert authentication service flag codes back to
+        # human readable strings
+        result = filter(lambda item: item[1] == self.service,
+                                     flags.TAC_PLUS_AUTHEN_SVC.items())
+        service = list(result)[0][0]
+
         # Build the string representation
-        fields = f'action: {self.action}, priv_lvl: {self.priv_lvl},' \
-                 f' authen_type: {self.authen_type}, service: {self.service},' \
+        fields = f'action: {action}, priv_lvl: {priv_lvl},' \
+                 f' authen_type: {authen_type}, service: {service},' \
                  f' user: {self.user}, port: {self.port},' \
                  f' remote_address: {self.remote_address}, data: {self.data}'
 
@@ -167,33 +189,6 @@ class TACACSPlusAuthenStart(Packet):
                              ' client/server shared key probably does not' \
                              ' match') from e
 
-        # Convert authentication action flag codes back to human readable strings
-        try:
-            result = filter(lambda item: item[1] == self._action,
-                                     flags.TAC_PLUS_AUTHEN_ACTIONS.items())
-            self._action = list(result)[0][0]
-
-            # Convert priveledge level flag codes back to human readable strings
-            result = filter(lambda item: item[1] == self._priv_lvl,
-                                         flags.TAC_PLUS_PRIV_LVL.items())
-            self._priv_lvl = list(result)[0][0]
-
-            # Convert authentication type flag codes back to human readable
-            # strings
-            result = filter(lambda item: item[1] == self._authen_type,
-                                         flags.TAC_PLUS_AUTHEN_TYPES.items())
-            self._authen_type = list(result)[0][0]
-
-            # Convert authentication service flag codes back to
-            # human readable strings
-            result = filter(lambda item: item[1] == self._service,
-                                         flags.TAC_PLUS_AUTHEN_SVC.items())
-            self._service = list(result)[0][0]
-        except IndexError as e:
-            raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
-                             ' client/server shared key probably does not' \
-                             ' match') from e
-
         return AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
                                  self._service, self._user, self._port,
                                  self._remote_address, self._data)
@@ -255,8 +250,18 @@ class AuthenReplyFields:
           fields(str): containing the auth reply fields
         """
 
+        # Convert status codes back to human readable strings
+        result = filter(lambda item: item[1] == self.status,
+                                 flags.TAC_PLUS_AUTHEN_STATUS.items())
+        status = list(result)[0][0]
+
+        # Convert status codes back to human readable strings
+        result = filter(lambda item: item[1] == self.flags,
+                                 flags.TAC_PLUS_REPLY_FLAGS.items())
+        reply_flags = list(result)[0][0]
+
         # Build the string representation
-        fields = f'status: {self.status}, flags: {self.flags},' \
+        fields = f'status: {status}, flags: {reply_flags},' \
                  f' server_msg: {self.server_msg}, data: {self.data}'
 
         return fields

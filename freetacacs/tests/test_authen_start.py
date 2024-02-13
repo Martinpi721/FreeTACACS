@@ -32,9 +32,9 @@ class TestAuthenStart:
         length = 0
 
         # What should be returned when we call __str__ on object
-        required_str = 'action: TAC_PLUS_AUTHEN_LOGIN, priv_lvl:' \
-                ' TAC_PLUS_PRIV_LVL_MIN, authen_type: TAC_PLUS_AUTHEN_TYPE_PAP,' \
-                ' service: TAC_PLUS_AUTHEN_SVC_LOGIN, user_len: 4, port_len: 11,' \
+        required_str = 'action: 1, priv_lvl:' \
+                ' 0, authen_type: 2,' \
+                ' service: 1, user_len: 4, port_len: 11,' \
                 ' rem_addr_len: 13, data_len: 4, user: test, port: python_tty0,' \
                 ' rem_addr: python_device, data: test'
 
@@ -49,10 +49,10 @@ class TestAuthenStart:
         fields = pkt.decode
 
         assert isinstance(pkt, AuthenStartPacket)
-        assert fields.action == 'TAC_PLUS_AUTHEN_LOGIN'
-        assert fields.priv_lvl == 'TAC_PLUS_PRIV_LVL_MIN'
-        assert fields.authen_type == 'TAC_PLUS_AUTHEN_TYPE_PAP'
-        assert fields.service == 'TAC_PLUS_AUTHEN_SVC_LOGIN'
+        assert fields.action == 1
+        assert fields.priv_lvl == 0
+        assert fields.authen_type == 2
+        assert fields.service == 1
         assert fields.user == 'test'
         assert fields.port == 'python_tty0'
         assert fields.remote_address == 'python_device'
@@ -151,7 +151,10 @@ class TestAuthenStart:
                                    user='test', port='1234', remote_address='test',
                                    data='testing123')
 
-        assert str(fields) == 'action: 1, priv_lvl: 1, authen_type: 1, service: 1,' \
+        assert str(fields) == 'action: TAC_PLUS_AUTHEN_LOGIN,' \
+                              ' priv_lvl: TAC_PLUS_PRIV_LVL_USER,' \
+                              ' authen_type: TAC_PLUS_AUTHEN_TYPE_ASCII,' \
+                              ' service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
                               ' user: test, port: 1234, remote_address: test,' \
                               ' data: testing123'
 

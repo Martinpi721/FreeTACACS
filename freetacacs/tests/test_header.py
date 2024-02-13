@@ -219,7 +219,8 @@ class TestTACACSPlusHeader:
         fields = Header.decode(encoded_header)
 
         assert fields.version == 1
-        assert fields.packet_type == 'TAC_PLUS_AUTHEN'
+        #assert fields.packet_type == 'TAC_PLUS_AUTHEN'
+        assert fields.packet_type == 1
         assert fields.session_id == 1
         assert fields.length == 1
         assert fields.sequence_no == 1
@@ -359,7 +360,7 @@ class TestTACACSPlusHeader:
 
         header = HeaderFields(version, packet_type, session_id, length)
 
-        assert str(header) == 'version: 1, packet_type: 3, session_id: 123,' \
+        assert str(header) == 'version: 1, packet_type: TAC_PLUS_ACCT, session_id: 123,' \
                               ' length: 1, sequence_no: 1, flags: 0'
 
 

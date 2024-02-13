@@ -74,7 +74,8 @@ class TestAuthenReply:
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenReplyFields('invalid', 0, 'test', 'test')
+            fields = AuthenReplyFields(status='invalid', flags=0x00,
+                                       server_msg='test', data='test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Status should be of type int'
@@ -92,7 +93,8 @@ class TestAuthenReply:
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenReplyFields(status=0, flags='invalid', server_msg='test', data='test')
+            fields = AuthenReplyFields(status=0, flags='invalid',
+                                       server_msg='test', data='test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Flags should be of type int'
@@ -110,7 +112,8 @@ class TestAuthenReply:
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenReplyFields(status=0, flags=0, server_msg=0, data='test')
+            fields = AuthenReplyFields(status=0x00, flags=0x00,
+                                      server_msg=0, data='test')
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Server Message should be of type string'
@@ -128,7 +131,8 @@ class TestAuthenReply:
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenReplyFields(status=0, flags=0, server_msg='test', data=0)
+            fields = AuthenReplyFields(status=0x00, flags=0x00,
+                                      server_msg='test', data=0)
             AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert str(e.value) == 'Data should be of type string'
@@ -145,7 +149,8 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 0, 'test', 'test')
+        fields = AuthenReplyFields(status=0x00, flags=0x00,
+                                   server_msg='test', data='test')
         pkt = AuthenReplyPacket(header, fields=fields, secret='test')
 
         assert isinstance(pkt, AuthenReplyPacket)
@@ -164,9 +169,12 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 0, 'test', 'test')
+        fields = AuthenReplyFields(status=0x01, flags=0x01,
+                                   server_msg='test', data='test')
 
-        assert str(fields) == 'status: 0, flags: 0, server_msg: test, data: test'
+        assert str(fields) == 'status: TAC_PLUS_AUTHEN_STATUS_PASS,' \
+                              ' flags: TAC_PLUS_REPLY_FLAG_NOECHO,' \
+                              ' server_msg: test, data: test'
 
 
     def test_authen_reply_fields_dict(self):
@@ -180,7 +188,8 @@ class TestAuthenReply:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenReplyFields(0, 0, 'test', 'test')
+        fields = AuthenReplyFields(status=0x00, flags=0x00,
+                                   server_msg='test', data='test')
 
         assert vars(fields) == {'status': 0, 'flags': 0, 'server_msg': 'test',
                                 'data': 'test'}
