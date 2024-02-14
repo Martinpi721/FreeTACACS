@@ -2,6 +2,7 @@
 Module provides unit tests for the Authentication Reply class
 
 Classes:
+    TestAuthenReplyFields
     TestAuthenReply
 
 Functions:
