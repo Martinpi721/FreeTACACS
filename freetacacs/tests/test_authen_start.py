@@ -2,6 +2,7 @@
 Module provides unit tests for the Authentication Start class
 
 Classes:
+    TestAuthenStartFields
     TestAuthenStart
 
 Functions:
@@ -17,6 +18,138 @@ from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authentication import AuthenStartFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
+
+
+class TestAuthenStartFields:
+    """Test class for testing the Authentication Start Fields class"""
+
+
+    def test_invalid_action(self):
+        """Test we handle passing a invalid action field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action='invalid')
+
+        assert str(e.value) == 'Action should be of type int'
+
+
+    def test_invalid_priv_lvl(self):
+        """Test we handle passing a invalid priv_lvl field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       priv_lvl='invalid')
+
+        assert str(e.value) == 'Priviledge Level should be of type int'
+
+
+    def test_invalid_authentication_type(self):
+        """Test we handle passing a invalid authentication type field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       authen_type='invalid')
+
+        assert str(e.value) == 'Authentication Type should be of type int'
+
+
+    def test_invalid_service(self):
+        """Test we handle passing a invalid service field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       service='invalid')
+
+        assert str(e.value) == 'Service should be of type int'
+
+
+    def test_invalid_user(self):
+        """Test we handle passing a invalid user field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       user=1234)
+
+        assert str(e.value) == 'User should be of type string'
+
+
+    def test_invalid_port(self):
+        """Test we handle passing a invalid port field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       port=1234)
+
+        assert str(e.value) == 'Port should be of type string'
+
+
+    def test_invalid_remote_Address(self):
+        """Test we handle passing a invalid remote address field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       remote_address=1234)
+
+        assert str(e.value) == 'Remote Address should be of type string'
+
+
+    def test_invalid_data(self):
+        """Test we handle passing a invalid data field type"""
+
+        # Configure the header
+        header = Header(HeaderFields(version=193,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=123456,
+                                     length=40))
+
+        with pytest.raises(TypeError) as e:
+            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                       data=1234)
+
+        assert str(e.value) == 'Data should be of type string'
+
 
 class TestAuthenStart:
     """Test class for testing the Authentication Start class"""
