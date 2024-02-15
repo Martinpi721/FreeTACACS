@@ -95,6 +95,43 @@ class TestAuthenReplyFields:
         assert str(e.value) == 'Data should be of type string'
 
 
+    def test_authen_reply_fields_string(self):
+        """Test we can get a string representation of authen reply fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenReplyFields(status=0x01, flags=0x01,
+                                   server_msg='test', data='test')
+
+        assert str(fields) == 'status: TAC_PLUS_AUTHEN_STATUS_PASS,' \
+                              ' flags: TAC_PLUS_REPLY_FLAG_NOECHO,' \
+                              ' server_msg: test, data: test'
+
+
+    def test_authen_reply_fields_dict(self):
+        """Test we can get a dict representation of authen reply fields"""
+
+        version = 193
+        packet_type = flags.TAC_PLUS_AUTHEN
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        fields = AuthenReplyFields(status=0x00, flags=0x00,
+                                   server_msg='test', data='test')
+
+        assert vars(fields) == {'status': 0, 'flags': 0, 'server_msg': 'test',
+                                'data': 'test'}
+
+
 class TestAuthenReply:
     """Test class for testing the Authentication Reply class"""
 
@@ -158,40 +195,3 @@ class TestAuthenReply:
         assert isinstance(pkt, AuthenReplyPacket)
         assert str(pkt) == 'status: 0, flags: 0, server_msg_len: 4,' \
                            ' data_len: 4, server_msg: test, data: test'
-
-
-    def test_authen_reply_fields_string(self):
-        """Test we can get a string representation of authen reply fields"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
-        fields = AuthenReplyFields(status=0x01, flags=0x01,
-                                   server_msg='test', data='test')
-
-        assert str(fields) == 'status: TAC_PLUS_AUTHEN_STATUS_PASS,' \
-                              ' flags: TAC_PLUS_REPLY_FLAG_NOECHO,' \
-                              ' server_msg: test, data: test'
-
-
-    def test_authen_reply_fields_dict(self):
-        """Test we can get a dict representation of authen reply fields"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
-        fields = AuthenReplyFields(status=0x00, flags=0x00,
-                                   server_msg='test', data='test')
-
-        assert vars(fields) == {'status': 0, 'flags': 0, 'server_msg': 'test',
-                                'data': 'test'}
