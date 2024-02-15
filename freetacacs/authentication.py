@@ -24,13 +24,13 @@ log = logging.getLogger(__name__)
 class AuthenStartFields:
     """Defines Authentication Start packet fields"""
     action: int
-    priv_lvl: int
-    authen_type: int
-    service: int
-    user: str
-    port: str
-    remote_address: str
-    data: str
+    priv_lvl: int = 0x00
+    authen_type: int = 0x00
+    service: int = 0x00
+    user: str = ''
+    port: str = ''
+    remote_address: str = ''
+    data: str = ''
 
     # Validate the data
     def __post_init__(self):
@@ -104,13 +104,27 @@ class AuthenStartFields:
 class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, header, body=six.b(''),
+                 fields=AuthenStartFields(action=0x01),
+                 secret=None):
         """Initialise a TACACS+ Authentication Start packet body
 
+        Initialise a TACACS+ Authentication START packet. This can be done by
+        either passing a byte body(when decoding) or passing values in a fields
+        dict(when creating).
+
+        Fields dict must contain the following keys: action, priv_lvl, authen_type
+        service, user, port, remote_address and data. See RFC8907 for details on
+        contents of each.
+
         Args:
-          None
+          header(obj): instance of a TACACSPlusHeader class
+          body(bytes): byte encoded TACACS+ packet body
+          fields(dataclass): fields used to create packet body
+          secret(str): client/server shared secret
         Exceptions:
-          None
+          TypeError
+          ValueError
         Returns:
           None
         """
@@ -132,7 +146,7 @@ class TACACSPlusAuthenStart(Packet):
         # +----------------+----------------+----------------+----------------+
 
         # Extend our parent class __init__ method
-        super().__init__(*args, **kwargs)
+        super().__init__(header, body, secret)
 
         # Initialise the packet body fields
         self._action = None
@@ -143,6 +157,64 @@ class TACACSPlusAuthenStart(Packet):
         self._port_len = None
         self._rem_addr_len = None
         self._data_len = None
+        self._user = None
+        self._port = None
+        self._remote_address = None
+        self._data = None
+
+        # If body is not empty nothing more is required from __init__
+        if len(self._body) > 0:
+            return None
+
+        # If fields dict doesn't contain these keys then we are decoding a START
+        # rather than building a START packet
+        try:
+            self._action = fields.action
+            self._priv_lvl = fields.priv_lvl
+            self._authen_type = fields.authen_type
+            self._service = fields.service
+            self._user = fields.user
+            self._user_len = len(self._user)
+            self._port = fields.port
+            self._port_len = len(self._port)
+            self._remote_address = fields.remote_address
+            self._rem_addr_len = len(self._remote_address)
+            self._data = fields.data
+            self._data_len = len(self._data)
+        except TypeError:
+            raise
+
+        # Build packet structure
+        try:
+            # B = unsigned char
+            self._body = struct.pack('BBBB', self._action, self._priv_lvl,
+                                     self._authen_type, self._service)
+            # !H = network-order (big-endian) unsigned short
+            self._body += struct.pack('!HHHH', self._user_len, self._port_len,
+                                       self._rem_addr_len, self._data_len)
+
+            # Byte encode
+            user = six.b(self._user)
+            port = six.b(self._port)
+            remote_address = six.b(self._remote_address)
+            data = six.b(self._data)
+
+            # s = char[]
+            for value in (user, port, remote_address, data):
+                self._body += struct.pack(f'{len(value)}s', value)
+        except struct.error as e:
+            raise ValueError('Unable to encode AuthenStart packet. Required' \
+                             ' arguments action, priv_lvl, authen_type and flags' \
+                             ' must be integers') from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AuthenStart packet. Required' \
+                             ' arguments user, port, remote_address and data' \
+                             ' must be strings') from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
+        return None
 
 
     @property
