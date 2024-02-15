@@ -267,7 +267,8 @@ class TACACSPlusAuthenReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication REPLY packet
     bodies"""
 
-    def __init__(self, header, body=six.b(''), fields=AuthenReplyFields(0, 0),
+    def __init__(self, header, body=six.b(''),
+                 fields=AuthenReplyFields(status=0x00, flags=0x00),
                  secret=None):
         """Initialise a TACAS+ Authentication REPLY packet body
 
