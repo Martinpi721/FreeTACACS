@@ -190,7 +190,7 @@ class TACACSPlusAuthenStart(Packet):
             self._body = struct.pack('BBBB', self._action, self._priv_lvl,
                                      self._authen_type, self._service)
             # !H = network-order (big-endian) unsigned short
-            self._body += struct.pack('!HHHH', self._user_len, self._port_len,
+            self._body += struct.pack('BBBB', self._user_len, self._port_len,
                                        self._rem_addr_len, self._data_len)
 
             # Byte encode
