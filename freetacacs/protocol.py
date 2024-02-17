@@ -86,7 +86,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         # Check the sequence no. a client sequence no. should always be odd
         # meaning any response must be even. In addition the max sequence no.
         # to meet the RFC specification is 255.
-        if rx_header.sequence_no % 2 == 0:
+        if rx_header_fields.sequence_no % 2 == 0:
             self.transport.loseConnection()
             return
 
