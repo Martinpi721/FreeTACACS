@@ -58,8 +58,8 @@ class TACACSPlusProtocol(protocol.Protocol):
         }
 
         self._auth_type_mapper = {
-                'TAC_PLUS_AUTHEN_TYPE_ASCII'   : self._auth_plain,
-                0x01                           : self._auth_plain,
+                'TAC_PLUS_AUTHEN_TYPE_ASCII'   : self._auth_ascii,
+                0x01                           : self._auth_ascii,
                 'TAC_PLUS_AUTHEN_TYPE_PAP'     : self._auth_pap,
                 0x02                           : self._auth_pap,
                 'TAC_PLUS_AUTHEN_TYPE_CHAP'    : self._auth_chap,
@@ -71,7 +71,7 @@ class TACACSPlusProtocol(protocol.Protocol):
         }
 
 
-    def _auth_plain(self, rx_header_fields, rx_body_fields):
+    def _auth_ascii(self, rx_header_fields, rx_body_fields):
         """Process ascii authentication
 
         Args:
