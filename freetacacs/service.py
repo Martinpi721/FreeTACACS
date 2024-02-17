@@ -93,6 +93,7 @@ class TACACSPlusService(service.Service):
 
         self.ip_address = ''
 
+
     def get_shared_secret(self, ip):
         """Lookup the client shared secret value from the clients ip address
 
@@ -105,6 +106,7 @@ class TACACSPlusService(service.Service):
         """
 
         return defer.succeed(self.secrets.get(ip, b"No such device"))
+
 
     def valid_credentials(self, username, password):
         """Lookup the client shared secret value from the clients ip address
@@ -120,9 +122,11 @@ class TACACSPlusService(service.Service):
 
         return defer.succeed(self.credentials.get(True, False))
 
+
     def startService(self):
         self.log.info("FreeTACACS ready to answer client requests.")
         service.Service.startService(self)
+
 
     def stopService(self):
         self.log.info("FreeTACACS has been requested to shut down.")

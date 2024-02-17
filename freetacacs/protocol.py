@@ -349,6 +349,7 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
+
         d = self.factory.get_shared_secret(self._nas_ip)
         d.addErrback(catch_error)
 
