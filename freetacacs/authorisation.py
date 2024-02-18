@@ -20,6 +20,22 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 @dataclass
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
+    arg_service: str           # Required
+    arg_cnt: int = 0
+    arg_protocol: str = ''
+    arg_cmd: str = ''
+    arg_cmd_arg: str = ''
+    arg_acl: int = 0
+    arg_inacl: str = ''
+    arg_outacl: str = ''
+    arg_addr: str = ''
+    arg_addr_pool: str = ''
+    arg_timeout: int = 0       # Zero is no timeout
+    arg_idletimeout: int = 0   # Zero is no timeout
+    arg_autocmd: str = ''
+    arg_noescape: bool = True
+    arg_nohangup: bool = True
+    arg_priv_lvl: int = 0x00
     authen_method: int = 0x00
     priv_lvl: int = 0x00
     authen_type: int = 0x00
@@ -27,7 +43,6 @@ class AuthorRequestFields:
     user: str = ''
     port: str = ''
     remote_address: str = ''
-    arg_cnt: int = 0
 
 
     # Validate the data
@@ -66,6 +81,51 @@ class AuthorRequestFields:
         if not isinstance(self.arg_cnt, int):
             raise TypeError('Argument Count should be of type int')
 
+        if not isinstance(self.arg_service, str):
+            raise TypeError('Argument Service should be of type string')
+
+        if not isinstance(self.arg_protocol, str):
+            raise TypeError('Argument Protocol should be of type string')
+
+        if not isinstance(self.arg_cmd, str):
+            raise TypeError('Argument CMD should be of type string')
+
+        if not isinstance(self.arg_cmd_arg, str):
+            raise TypeError('Argument CMD-arg should be of type string')
+
+        if not isinstance(self.arg_acl, int):
+            raise TypeError('Argument ACL should be of type int')
+
+        if not isinstance(self.arg_inacl, str):
+            raise TypeError('Argument in ACL should be of type string')
+
+        if not isinstance(self.arg_outacl, str):
+            raise TypeError('Argument out ACL should be of type string')
+
+        if not isinstance(self.arg_addr, str):
+            raise TypeError('Argument addr should be of type string')
+
+        if not isinstance(self.arg_addr_pool, str):
+            raise TypeError('Argument addr-pool should be of type string')
+
+        if not isinstance(self.arg_timeout, int):
+            raise TypeError('Argument Timeout should be of type int')
+
+        if not isinstance(self.arg_idletimeout, int):
+            raise TypeError('Argument IdleTimeout should be of type int')
+
+        if not isinstance(self.arg_autocmd, str):
+            raise TypeError('Argument AutoCMD should be of type string')
+
+        if not isinstance(self.arg_noescape, bool):
+            raise TypeError('Argument no escape should be of type boolean')
+
+        if not isinstance(self.arg_nohangup, bool):
+            raise TypeError('Argument no hangup should be of type boolean')
+
+        if not isinstance(self.arg_priv_lvl, int):
+            raise TypeError('Argument Priviledge Level should be of type int')
+
 
     def __str__(self):
         """String representation of the authorisation request fields
@@ -84,7 +144,7 @@ class TACACSPlusAuthorRequest(Packet):
     """Class to handle encoding/decoding of TACACS+ Authorisation REQUEST packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthorRequestFields(),
+                 fields=AuthorRequestFields(arg_service=''),
                  secret=None):
         """Initialise a TACACS+ Authorisation REQUEST packet body
 
