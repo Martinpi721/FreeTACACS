@@ -26,14 +26,6 @@ class TestAuthenReplyFields:
     def test_invalid_status(self):
         """Test we handle passing a invalid status field type"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
         with pytest.raises(TypeError) as e:
             fields = AuthenReplyFields(status='invalid', flags=0x00,
                                        server_msg='test', data='test')
@@ -43,14 +35,6 @@ class TestAuthenReplyFields:
 
     def test_invalid_flags(self):
         """Test we handle passing a invalid flags field type"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
             fields = AuthenReplyFields(status=0, flags='invalid',
@@ -62,14 +46,6 @@ class TestAuthenReplyFields:
     def test_invalid_server_msg(self):
         """Test we handle passing a invalid server_msg field type"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
         with pytest.raises(TypeError) as e:
             fields = AuthenReplyFields(status=0x00, flags=0x00,
                                       server_msg=0, data='test')
@@ -79,14 +55,6 @@ class TestAuthenReplyFields:
 
     def test_invalid_data(self):
         """Test we handle passing a invalid data field type"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         with pytest.raises(TypeError) as e:
             fields = AuthenReplyFields(status=0x00, flags=0x00,
@@ -98,14 +66,6 @@ class TestAuthenReplyFields:
     def test_authen_reply_fields_string(self):
         """Test we can get a string representation of authen reply fields"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
         fields = AuthenReplyFields(status=0x01, flags=0x01,
                                    server_msg='test', data='test')
 
@@ -116,14 +76,6 @@ class TestAuthenReplyFields:
 
     def test_authen_reply_fields_dict(self):
         """Test we can get a dict representation of authen reply fields"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
 
         fields = AuthenReplyFields(status=0x00, flags=0x00,
                                    server_msg='test', data='test')
