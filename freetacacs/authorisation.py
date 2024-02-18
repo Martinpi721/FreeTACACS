@@ -91,7 +91,7 @@ class AuthorRequestFields:
             raise TypeError('Argument CMD should be of type string')
 
         if not isinstance(self.arg_cmd_arg, str):
-            raise TypeError('Argument CMD-arg should be of type string')
+            raise TypeError('Argument CMD-ARG should be of type string')
 
         if not isinstance(self.arg_acl, int):
             raise TypeError('Argument ACL should be of type int')
@@ -103,25 +103,25 @@ class AuthorRequestFields:
             raise TypeError('Argument out ACL should be of type string')
 
         if not isinstance(self.arg_addr, str):
-            raise TypeError('Argument addr should be of type string')
+            raise TypeError('Argument IP Address should be of type string')
 
         if not isinstance(self.arg_addr_pool, str):
-            raise TypeError('Argument addr-pool should be of type string')
+            raise TypeError('Argument IP Pool should be of type string')
 
         if not isinstance(self.arg_timeout, int):
             raise TypeError('Argument Timeout should be of type int')
 
         if not isinstance(self.arg_idletimeout, int):
-            raise TypeError('Argument IdleTimeout should be of type int')
+            raise TypeError('Argument Idle Timeout should be of type int')
 
         if not isinstance(self.arg_autocmd, str):
-            raise TypeError('Argument AutoCMD should be of type string')
+            raise TypeError('Argument Auto CMD should be of type string')
 
         if not isinstance(self.arg_noescape, bool):
-            raise TypeError('Argument no escape should be of type boolean')
+            raise TypeError('Argument noescape should be of type boolean')
 
         if not isinstance(self.arg_nohangup, bool):
-            raise TypeError('Argument no hangup should be of type boolean')
+            raise TypeError('Argument nohangup should be of type boolean')
 
         if not isinstance(self.arg_priv_lvl, int):
             raise TypeError('Argument Priviledge Level should be of type int')
