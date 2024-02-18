@@ -23,7 +23,7 @@ class AuthorRequestFields:
     authen_method: int = 0x00
     priv_lvl: int = 0x00
     authen_type: int = 0x00
-    service: int = 0x00
+    authen_service: int = 0x00
     user: str = ''
     port: str = ''
     remote_address: str = ''
@@ -51,8 +51,8 @@ class AuthorRequestFields:
         if not isinstance(self.authen_type, int):
             raise TypeError('Authentication Type should be of type int')
 
-        if not isinstance(self.service, int):
-            raise TypeError('Service should be of type int')
+        if not isinstance(self.authen_service, int):
+            raise TypeError('Authentication Service should be of type int')
 
         if not isinstance(self.user, str):
             raise TypeError('User should be of type string')

@@ -25,11 +25,11 @@ class TestCreateLogDict(unittest.TestCase):
         required_dict = {'action': 1, 'authen_type': 1, 'data': 'test',
                         'flags': 0, 'length': 0, 'packet_type': 1,
                         'port': '1234', 'priv_lvl': 1, 'remote_address': 'temp',
-                        'sequence_no': 1, 'service': 1, 'session_id': 123,
+                        'sequence_no': 1, 'authen_service': 1, 'session_id': 123,
                         'user': 'test', 'version': 193}
 
         header = HeaderFields(version=193, packet_type=0x01, session_id=123)
-        body = AuthenStartFields(action=0x01, priv_lvl=0x01, service=0x01,
+        body = AuthenStartFields(action=0x01, priv_lvl=0x01, authen_service=0x01,
                                  user='test', port='1234', remote_address='temp',
                                  authen_type=0x01, data='test')
 

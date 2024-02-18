@@ -71,8 +71,8 @@ class TestAuthenStartFields:
         assert str(e.value) == 'Authentication Type should be of type int'
 
 
-    def test_invalid_service(self):
-        """Test we handle passing a invalid service field type"""
+    def test_invalid_authen_service(self):
+        """Test we handle passing a invalid authentication service field type"""
 
         # Configure the header
         header = Header(HeaderFields(version=193,
@@ -82,9 +82,9 @@ class TestAuthenStartFields:
 
         with pytest.raises(TypeError) as e:
             fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       service='invalid')
+                                       authen_service='invalid')
 
-        assert str(e.value) == 'Service should be of type int'
+        assert str(e.value) == 'Authentication Service should be of type int'
 
 
     def test_invalid_user(self):
@@ -162,14 +162,14 @@ class TestAuthenStartFields:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, service=1,
+        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, authen_service=1,
                                    user='test', port='1234', remote_address='test',
                                    data='testing123')
 
         assert str(fields) == 'action: TAC_PLUS_AUTHEN_LOGIN,' \
                               ' priv_lvl: TAC_PLUS_PRIV_LVL_USER,' \
                               ' authen_type: TAC_PLUS_AUTHEN_TYPE_ASCII,' \
-                              ' service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
+                              ' authen_service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
                               ' user: test, port: 1234, remote_address: test,' \
                               ' data: testing123'
 
@@ -185,12 +185,12 @@ class TestAuthenStartFields:
         # Configure the header
         header = Header(HeaderFields(version, packet_type, session_id, length))
 
-        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, service=1,
+        fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, authen_service=1,
                                    user='test', port='1234', remote_address='test',
                                    data='testing123')
 
         assert vars(fields) == {'action': 1, 'priv_lvl': 1, 'authen_type': 1,
-                                'service': 1, 'user': 'test', 'port': '1234',
+                                'authen_service': 1, 'user': 'test', 'port': '1234',
                                 'remote_address': 'test', 'data': 'testing123'}
 
 
@@ -226,7 +226,7 @@ class TestAuthenStart:
         # What should be returned when we call __str__ on object
         required_str = 'action: 1, priv_lvl:' \
                 ' 0, authen_type: 2,' \
-                ' service: 1, user_len: 4, port_len: 11,' \
+                ' authen_service: 1, user_len: 4, port_len: 11,' \
                 ' rem_addr_len: 13, data_len: 4, user: test, port: python_tty0,' \
                 ' rem_addr: python_device, data: test'
 
@@ -244,7 +244,7 @@ class TestAuthenStart:
         assert fields.action == 1
         assert fields.priv_lvl == 0
         assert fields.authen_type == 2
-        assert fields.service == 1
+        assert fields.authen_service == 1
         assert fields.user == 'test'
         assert fields.port == 'python_tty0'
         assert fields.remote_address == 'python_device'
@@ -267,7 +267,7 @@ class TestAuthenStart:
         fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
                                    priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
                                    authen_type=flags.TAC_PLUS_AUTHEN_TYPE_PAP,
-                                   service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                   authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
                                    user='jsmith',
                                    port='python_tty0',
                                    remote_address='python_device',
@@ -276,7 +276,7 @@ class TestAuthenStart:
         pkt = AuthenStartPacket(header, fields=fields, secret='test')
 
         assert isinstance(pkt, AuthenStartPacket)
-        assert str(pkt) == 'action: 1, priv_lvl: 0, authen_type: 2, service: 1,' \
+        assert str(pkt) == 'action: 1, priv_lvl: 0, authen_type: 2, authen_service: 1,' \
                            ' user_len: 6, port_len: 11, rem_addr_len: 13,' \
                            ' data_len: 10, user: jsmith, port: python_tty0,' \
                            ' rem_addr: python_device, data: top_secret'

@@ -152,7 +152,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build the reply packet body
         tx_body_fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
                                            authen_type=flags.TAC_PLUS_AUTHEN_TYPE_PAP,
-                                           service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                           authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
                                            priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
                                            user='jsmith',
                                            port='python_tty0',
@@ -226,7 +226,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build the reply packet body
         tx_body_fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
                                            authen_type=flags.TAC_PLUS_AUTHEN_TYPE_CHAP,
-                                           service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                           authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
                                            priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
                                            user='jsmith',
                                            port='python_tty0',
@@ -300,7 +300,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build the reply packet body
         tx_body_fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
                                            authen_type=flags.TAC_PLUS_AUTHEN_TYPE_ASCII,
-                                           service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                           authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
                                            priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
                                            user='jsmith',
                                            port='python_tty0',

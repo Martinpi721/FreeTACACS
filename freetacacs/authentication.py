@@ -26,7 +26,7 @@ class AuthenStartFields:
     action: int
     priv_lvl: int = 0x00
     authen_type: int = 0x00
-    service: int = 0x00
+    authen_service: int = 0x00
     user: str = ''
     port: str = ''
     remote_address: str = ''
@@ -43,8 +43,8 @@ class AuthenStartFields:
         if not isinstance(self.authen_type, int):
             raise TypeError('Authentication Type should be of type int')
 
-        if not isinstance(self.service, int):
-            raise TypeError('Service should be of type int')
+        if not isinstance(self.authen_service, int):
+            raise TypeError('Authentication Service should be of type int')
 
         if not isinstance(self.user, str):
             raise TypeError('User should be of type string')
@@ -88,13 +88,13 @@ class AuthenStartFields:
 
         # Convert authentication service flag codes back to
         # human readable strings
-        result = filter(lambda item: item[1] == self.service,
+        result = filter(lambda item: item[1] == self.authen_service,
                                      flags.TAC_PLUS_AUTHEN_SVC.items())
-        service = list(result)[0][0]
+        authen_service = list(result)[0][0]
 
         # Build the string representation
         fields = f'action: {action}, priv_lvl: {priv_lvl},' \
-                 f' authen_type: {authen_type}, service: {service},' \
+                 f' authen_type: {authen_type}, authen_service: {authen_service},' \
                  f' user: {self.user}, port: {self.port},' \
                  f' remote_address: {self.remote_address}, data: {self.data}'
 
@@ -113,8 +113,8 @@ class TACACSPlusAuthenStart(Packet):
         either passing a byte body(when decoding) or passing values in a fields
         dict(when creating).
 
-        Fields dict must contain the following keys: action, priv_lvl, authen_type
-        service, user, port, remote_address and data. See RFC8907 for details on
+        Fields dict must contain the following keys: action, priv_lvl, authen_type,
+        authen_service, user, port, remote_address and data. See RFC8907 for details on
         contents of each.
 
         Args:
@@ -132,7 +132,7 @@ class TACACSPlusAuthenStart(Packet):
         # 1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8
         #
         # +----------------+----------------+----------------+----------------+
-        # |    action      |    priv_lvl    |  authen_type   |     service    |
+        # |    action      |    priv_lvl    |  authen_type   | authen_service |
         # +----------------+----------------+----------------+----------------+
         # |    user len    |    port len    |  rem_addr len  |    data len    |
         # +----------------+----------------+----------------+----------------+
@@ -152,7 +152,7 @@ class TACACSPlusAuthenStart(Packet):
         self._action = None
         self._priv_lvl = None
         self._authen_type = None
-        self._service = None
+        self._authen_service = None
         self._user_len = None
         self._port_len = None
         self._rem_addr_len = None
@@ -172,7 +172,7 @@ class TACACSPlusAuthenStart(Packet):
             self._action = fields.action
             self._priv_lvl = fields.priv_lvl
             self._authen_type = fields.authen_type
-            self._service = fields.service
+            self._authen_service = fields.authen_service
             self._user = fields.user
             self._user_len = len(self._user)
             self._port = fields.port
@@ -188,7 +188,7 @@ class TACACSPlusAuthenStart(Packet):
         try:
             # B = unsigned char
             self._body = struct.pack('BBBB', self._action, self._priv_lvl,
-                                     self._authen_type, self._service)
+                                     self._authen_type, self._authen_service)
             # !H = network-order (big-endian) unsigned short
             self._body += struct.pack('BBBB', self._user_len, self._port_len,
                                        self._rem_addr_len, self._data_len)
@@ -241,7 +241,7 @@ class TACACSPlusAuthenStart(Packet):
         # Decode the packet body
         try:
             self._action, self._priv_lvl = struct.unpack('BB', body.read(2))
-            self._authen_type, self._service = struct.unpack('BB', body.read(2))
+            self._authen_type, self._authen_service = struct.unpack('BB', body.read(2))
 
             (self._user_len,
              self._port_len,
@@ -258,7 +258,7 @@ class TACACSPlusAuthenStart(Packet):
                              ' match') from e
 
         return AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
-                                 self._service, self._user, self._port,
+                                 self._authen_service, self._user, self._port,
                                  self._remote_address, self._data)
 
 
@@ -275,9 +275,10 @@ class TACACSPlusAuthenStart(Packet):
 
         # Build the string representation
         packet = f'action: {self._action}, priv_lvl: {self._priv_lvl},' \
-                 f' authen_type: {self._authen_type}, service: {self._service},' \
-                 f' user_len: {self._user_len}, port_len: {self._port_len},' \
-                 f' rem_addr_len: {self._rem_addr_len}, data_len: {self._data_len},' \
+                 f' authen_type: {self._authen_type}, authen_service:' \
+                 f' {self._authen_service}, user_len: {self._user_len},' \
+                 f' port_len: {self._port_len}, rem_addr_len:' \
+                 f' {self._rem_addr_len}, data_len: {self._data_len},' \
                  f' user: {self._user}, port: {self._port},' \
                  f' rem_addr: {self._remote_address}, data: {self._data}'
 

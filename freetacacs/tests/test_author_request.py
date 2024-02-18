@@ -49,13 +49,13 @@ class TestAuthorRequestFields:
         assert str(e.value) == 'Authentication Type should be of type int'
 
 
-    def test_invalid_service(self):
-        """Test we handle passing a invalid service type field type"""
+    def test_invalid_authen_service(self):
+        """Test we handle passing a invalid authentication service type field type"""
 
         with pytest.raises(TypeError) as e:
-            fields = AuthorRequestFields(service='invalid')
+            fields = AuthorRequestFields(authen_service='invalid')
 
-        assert str(e.value) == 'Service should be of type int'
+        assert str(e.value) == 'Authentication Service should be of type int'
 
 
     def test_invalid_user(self):
