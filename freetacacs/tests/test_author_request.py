@@ -247,3 +247,51 @@ class TestAuthorRequestFields:
                                          arg_service='shell')
 
         assert str(e.value) == 'Remote Address should be of type string'
+
+
+    def test_default_author_request_fields_string(self):
+        """Test we can get the default string representation of author request fields"""
+
+        fields = AuthorRequestFields(arg_service='shell')
+
+        assert str(fields) == 'priv_lvl: TAC_PLUS_PRIV_LVL_MIN, authen_method:' \
+                              ' TAC_PLUS_AUTHEN_METH_NOT_SET, authen_service:' \
+                              ' TAC_PLUS_AUTHEN_SVC_NONE, user: , port: ,' \
+                              ' arg_cnt: 0, user: , port: , remote_address: ,' \
+                              ' arg_protocol: , arg_cmd: , arg_cmd_arg: ,' \
+                              ' arg_acl: 0, arg_inacl: , arg_outacl: , arg_addr: ,' \
+                              ' arg_addr_pool: , arg_timeout: 0, arg_idletimeout: 0,' \
+                              ' arg_autocmd: , arg_noescape: True, arg_nohangup: True,' \
+                              ' arg_priv_lvl: 0'
+
+
+    def test_default_author_request_fields_dict(self):
+        """Test we can get the default dict representation of author request fields"""
+
+        fields = AuthorRequestFields(arg_service='shell')
+
+        assert vars(fields) == {
+                                 'arg_service'     : 'shell',
+                                 'arg_cnt'         : 0,
+                                 'arg_protocol'    : '',
+                                 'arg_cmd'         : '',
+                                 'arg_cmd_arg'     : '',
+                                 'arg_acl'         : 0,
+                                 'arg_inacl'       : '',
+                                 'arg_outacl'      : '',
+                                 'arg_addr'        : '',
+                                 'arg_addr_pool'   : '',
+                                 'arg_timeout'     : 0,
+                                 'arg_idletimeout' : 0,
+                                 'arg_autocmd'     : '',
+                                 'arg_noescape'    : True,
+                                 'arg_nohangup'    : True,
+                                 'arg_priv_lvl'    : 0,
+                                 'authen_method'   : 0,
+                                 'priv_lvl'        : 0,
+                                 'authen_type'     : 0,
+                                 'authen_service'  : 0,
+                                 'user'            : '',
+                                 'port'            : '',
+                                 'remote_address'  : ''
+                                }

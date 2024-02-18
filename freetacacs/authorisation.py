@@ -137,7 +137,43 @@ class AuthorRequestFields:
         Returns:
           fields(str): containing the authorisation request fields
         """
-        pass
+
+        # Convert priveledge level flag codes back to human readable strings
+        result = filter(lambda item: item[1] == self.priv_lvl,
+                                     flags.TAC_PLUS_PRIV_LVL.items())
+        priv_lvl = list(result)[0][0]
+
+        # Convert authentication type flag codes back to human readable
+        # strings
+        result = filter(lambda item: item[1] == self.authen_method,
+                                     flags.TAC_PLUS_AUTHEN_METHODS.items())
+        authen_method = list(result)[0][0]
+
+        # Convert authentication service flag codes back to
+        # human readable strings
+        result = filter(lambda item: item[1] == self.authen_service,
+                                     flags.TAC_PLUS_AUTHEN_SVC.items())
+        authen_service = list(result)[0][0]
+
+        # Build the string representation
+        fields = f'priv_lvl: {priv_lvl}, authen_method: {authen_method},' \
+                 f' authen_service: {authen_service}, user: {self.user},' \
+                 f' port: {self.port}, arg_cnt: {self.arg_cnt},' \
+                 f' user: {self.user}, port: {self.port},' \
+                 f' remote_address: {self.remote_address},' \
+                 f' arg_protocol: {self.arg_protocol},' \
+                 f' arg_cmd: {self.arg_cmd}, arg_cmd_arg: {self.arg_cmd_arg},' \
+                 f' arg_acl: {self.arg_acl}, arg_inacl: {self.arg_inacl},' \
+                 f' arg_outacl: {self.arg_outacl}, arg_addr: {self.arg_addr},' \
+                 f' arg_addr_pool: {self.arg_addr_pool},' \
+                 f' arg_timeout: {self.arg_timeout},' \
+                 f' arg_idletimeout: {self.arg_idletimeout},' \
+                 f' arg_autocmd: {self.arg_autocmd},' \
+                 f' arg_noescape: {self.arg_noescape},' \
+                 f' arg_nohangup: {self.arg_nohangup},' \
+                 f' arg_priv_lvl: {self.arg_priv_lvl}' \
+
+        return fields
 
 
 class TACACSPlusAuthorRequest(Packet):
