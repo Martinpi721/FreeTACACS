@@ -21,7 +21,7 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
     arg_service: str           # Required
-    arg_cnt: int = 0
+    arg_cnt: int = 1
     arg_protocol: str = ''
     arg_cmd: str = ''
     arg_cmd_arg: str = ''
@@ -159,7 +159,6 @@ class AuthorRequestFields:
         fields = f'priv_lvl: {priv_lvl}, authen_method: {authen_method},' \
                  f' authen_service: {authen_service}, user: {self.user},' \
                  f' port: {self.port}, arg_cnt: {self.arg_cnt},' \
-                 f' user: {self.user}, port: {self.port},' \
                  f' remote_address: {self.remote_address},' \
                  f' arg_protocol: {self.arg_protocol},' \
                  f' arg_cmd: {self.arg_cmd}, arg_cmd_arg: {self.arg_cmd_arg},' \
@@ -188,8 +187,12 @@ class TACACSPlusAuthorRequest(Packet):
         either passing a byte body(when decoding) or passing values in a fields
         dict(when creating).
 
-        Fields dict must contain the following keys:
-        See RFC8907 for details on contents of each.
+        Fields dict must contain the following keys: authen_method, priv_lvl,
+        authen_type, authen_service, user, port, remote_address, arg_cnt,
+        arg_service, arg_protocol, arg_cmd, arg_cmd_arg, arg_acl, arg_inacl,
+        arg_outacl, arg_addr, arg_addr_pool, arg_timeout, arg_idletimeout,
+        arg_authcmd, arg_noescape, arg_nohangup, arg_priv_lvl. See RFC8907
+        for details on contents of each.
 
         Args:
           header(obj): instance of a TACACSPlusHeader class

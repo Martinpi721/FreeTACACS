@@ -257,7 +257,7 @@ class TestAuthorRequestFields:
         assert str(fields) == 'priv_lvl: TAC_PLUS_PRIV_LVL_MIN, authen_method:' \
                               ' TAC_PLUS_AUTHEN_METH_NOT_SET, authen_service:' \
                               ' TAC_PLUS_AUTHEN_SVC_NONE, user: , port: ,' \
-                              ' arg_cnt: 0, user: , port: , remote_address: ,' \
+                              ' arg_cnt: 1, remote_address: ,' \
                               ' arg_protocol: , arg_cmd: , arg_cmd_arg: ,' \
                               ' arg_acl: 0, arg_inacl: , arg_outacl: , arg_addr: ,' \
                               ' arg_addr_pool: , arg_timeout: 0, arg_idletimeout: 0,' \
@@ -272,7 +272,7 @@ class TestAuthorRequestFields:
 
         assert vars(fields) == {
                                  'arg_service'     : 'shell',
-                                 'arg_cnt'         : 0,
+                                 'arg_cnt'         : 1,
                                  'arg_protocol'    : '',
                                  'arg_cmd'         : '',
                                  'arg_cmd_arg'     : '',
@@ -295,3 +295,43 @@ class TestAuthorRequestFields:
                                  'port'            : '',
                                  'remote_address'  : ''
                                 }
+
+
+    def test_set_author_request_fields(self):
+        """Test we can set the author request fields"""
+
+        fields = AuthorRequestFields(arg_service='shell',
+                                     arg_cnt=15,
+                                     arg_protocol='tcp',
+                                     arg_cmd='show run',
+                                     arg_cmd_arg='',
+                                     arg_acl=21,
+                                     arg_inacl='',
+                                     arg_outacl='',
+                                     arg_addr='192.168.1.1',
+                                     arg_addr_pool='192.168.1.0/24',
+                                     arg_timeout=5,
+                                     arg_idletimeout=5,
+                                     arg_autocmd='',
+                                     arg_noescape=False,
+                                     arg_nohangup=False,
+                                     arg_priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
+                                     authen_method=flags.TAC_PLUS_AUTHEN_METH_ENABLE,
+                                     priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
+                                     authen_type=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                     authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                     user='jsmith',
+                                     port='python_tty0',
+                                     remote_address='python_device')
+
+        assert str(fields) == 'priv_lvl: TAC_PLUS_PRIV_LVL_MIN,' \
+                              ' authen_method: TAC_PLUS_AUTHEN_METH_ENABLE,' \
+                              ' authen_service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
+                              ' user: jsmith, port: python_tty0, arg_cnt: 15,' \
+                              ' remote_address: python_device, arg_protocol: tcp,' \
+                              ' arg_cmd: show run, arg_cmd_arg: , arg_acl: 21,' \
+                              ' arg_inacl: , arg_outacl: , arg_addr: 192.168.1.1,' \
+                              ' arg_addr_pool: 192.168.1.0/24, arg_timeout: 5,' \
+                              ' arg_idletimeout: 5, arg_autocmd: ,' \
+                              ' arg_noescape: False, arg_nohangup: False,' \
+                              ' arg_priv_lvl: 0'
