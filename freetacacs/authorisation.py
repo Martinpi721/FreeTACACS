@@ -9,7 +9,7 @@ Functions:
     None
 """
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import six
 
 # Local imports
@@ -20,29 +20,15 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 @dataclass
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
-    arg_service: str           # Required
-    arg_cnt: int = 1
-    arg_protocol: str = ''
-    arg_cmd: str = ''
-    arg_cmd_arg: str = ''
-    arg_acl: int = 0
-    arg_inacl: str = ''
-    arg_outacl: str = ''
-    arg_addr: str = ''
-    arg_addr_pool: str = ''
-    arg_timeout: int = 0       # Zero is no timeout
-    arg_idletimeout: int = 0   # Zero is no timeout
-    arg_autocmd: str = ''
-    arg_noescape: bool = True
-    arg_nohangup: bool = True
-    arg_priv_lvl: int = 0x00
     authen_method: int = 0x00
     priv_lvl: int = 0x00
     authen_type: int = 0x00
     authen_service: int = 0x00
     user: str = ''
     port: str = ''
+    arg_cnt: int = 1
     remote_address: str = ''
+    args: dict = field(default_factory=dict)
 
 
     # Validate the data
@@ -81,51 +67,6 @@ class AuthorRequestFields:
         if not isinstance(self.arg_cnt, int):
             raise TypeError('Argument Count should be of type int')
 
-        if not isinstance(self.arg_service, str):
-            raise TypeError('Argument Service should be of type string')
-
-        if not isinstance(self.arg_protocol, str):
-            raise TypeError('Argument Protocol should be of type string')
-
-        if not isinstance(self.arg_cmd, str):
-            raise TypeError('Argument CMD should be of type string')
-
-        if not isinstance(self.arg_cmd_arg, str):
-            raise TypeError('Argument CMD-ARG should be of type string')
-
-        if not isinstance(self.arg_acl, int):
-            raise TypeError('Argument ACL should be of type int')
-
-        if not isinstance(self.arg_inacl, str):
-            raise TypeError('Argument in ACL should be of type string')
-
-        if not isinstance(self.arg_outacl, str):
-            raise TypeError('Argument out ACL should be of type string')
-
-        if not isinstance(self.arg_addr, str):
-            raise TypeError('Argument IP Address should be of type string')
-
-        if not isinstance(self.arg_addr_pool, str):
-            raise TypeError('Argument IP Pool should be of type string')
-
-        if not isinstance(self.arg_timeout, int):
-            raise TypeError('Argument Timeout should be of type int')
-
-        if not isinstance(self.arg_idletimeout, int):
-            raise TypeError('Argument Idle Timeout should be of type int')
-
-        if not isinstance(self.arg_autocmd, str):
-            raise TypeError('Argument Auto CMD should be of type string')
-
-        if not isinstance(self.arg_noescape, bool):
-            raise TypeError('Argument noescape should be of type boolean')
-
-        if not isinstance(self.arg_nohangup, bool):
-            raise TypeError('Argument nohangup should be of type boolean')
-
-        if not isinstance(self.arg_priv_lvl, int):
-            raise TypeError('Argument Priviledge Level should be of type int')
-
 
     def __str__(self):
         """String representation of the authorisation request fields
@@ -159,18 +100,11 @@ class AuthorRequestFields:
         fields = f'priv_lvl: {priv_lvl}, authen_method: {authen_method},' \
                  f' authen_service: {authen_service}, user: {self.user},' \
                  f' port: {self.port}, arg_cnt: {self.arg_cnt},' \
-                 f' remote_address: {self.remote_address},' \
-                 f' arg_protocol: {self.arg_protocol},' \
-                 f' arg_cmd: {self.arg_cmd}, arg_cmd_arg: {self.arg_cmd_arg},' \
-                 f' arg_acl: {self.arg_acl}, arg_inacl: {self.arg_inacl},' \
-                 f' arg_outacl: {self.arg_outacl}, arg_addr: {self.arg_addr},' \
-                 f' arg_addr_pool: {self.arg_addr_pool},' \
-                 f' arg_timeout: {self.arg_timeout},' \
-                 f' arg_idletimeout: {self.arg_idletimeout},' \
-                 f' arg_autocmd: {self.arg_autocmd},' \
-                 f' arg_noescape: {self.arg_noescape},' \
-                 f' arg_nohangup: {self.arg_nohangup},' \
-                 f' arg_priv_lvl: {self.arg_priv_lvl}' \
+                 f' remote_address: {self.remote_address}'
+
+        # Add the args to the string
+        for key, value in self.args.items():
+            fields += f', {key}: {value}'
 
         return fields
 
@@ -179,7 +113,7 @@ class TACACSPlusAuthorRequest(Packet):
     """Class to handle encoding/decoding of TACACS+ Authorisation REQUEST packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthorRequestFields(arg_service=''),
+                 fields=AuthorRequestFields(),
                  secret=None):
         """Initialise a TACACS+ Authorisation REQUEST packet body
 
