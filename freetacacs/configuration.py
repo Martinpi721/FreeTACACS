@@ -51,7 +51,7 @@ def load_config(file_path):
         with open(file_path, 'r') as f:
             data = yaml.safe_load(f)
     except FileNotFoundError as e:
-        log.warn(message=f'Configuration file {file_path} not found. Using' \
+        log.warn(text=f'Configuration file {file_path} not found. Using' \
                           ' default configuration settings.')
         return configuration
 
@@ -79,13 +79,13 @@ def valid_config(cfg):
 
     # Loop over the configuration dictionary
     for key, value in cfg.items():
-        log.debug(message=f'Configuration key [{key}] set to [{value}].')
+        log.debug(text=f'Configuration key [{key}] set to [{value}].')
 
         # Check each of these keys
         if key == 'secrets_type' or key == 'author_type':
             if value != 'file':
                 msg = f'Config option {key} has invalid value [{value}].'
-                log.debug(message=msg)
+                log.debug(text=msg)
                 raise ConfigTypeError(msg)
 
         # Check to see if file exists
@@ -93,11 +93,11 @@ def valid_config(cfg):
             if not os.path.exists(value):
                 msg = f'Unable to find file {value} specified by configuration' \
                       f' option {key}.'
-                log.debug(message=msg)
+                log.debug(text=msg)
                 raise ConfigFileError(msg)
 
         # Check auth_type is valid
         if key == 'auth_type' and value != 'pam':
             msg = f'Config option {key} has invalid value [{value}].'
-            log.debug(message=msg)
+            log.debug(text=msg)
             raise ConfigTypeError(msg)

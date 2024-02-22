@@ -62,7 +62,7 @@ class TestConfiguration(unittest.TestCase):
 
         # Verify we havea default config and the logging is sane
         self.assertDictEqual(cfg, required_cfg)
-        self.assertEqual(msg['message'], required_log['msg'])
+        self.assertEqual(msg['text'], required_log['msg'])
         self.assertEqual(msg['log_level'], required_log['level'])
         self.assertEqual(msg['log_namespace'], required_log['namespace'])
 
@@ -133,14 +133,14 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the first log event from out log capture and test values
         msg = catcher.pop()
-        self.assertEqual(msg['message'], 'Configuration key [author_file] set to ' \
+        self.assertEqual(msg['text'], 'Configuration key [author_file] set to ' \
                          '[./freetacacs/tests/data/configuration/etc/authorisations.json].')
         self.assertEqual(msg['log_level'], LogLevel.debug)
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
 
         # Extract the second log event from out log capture and test values
         msg = catcher.pop()
-        self.assertEqual(msg['message'], 'Configuration key [author_type] set to [file].')
+        self.assertEqual(msg['text'], 'Configuration key [author_type] set to [file].')
         self.assertEqual(msg['log_level'], LogLevel.debug)
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
 
@@ -167,7 +167,7 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the last log event from out log capture and test values
         msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Config option secrets_type has invalid' \
+        self.assertEqual(msg['text'], 'Config option secrets_type has invalid' \
                                          ' value [not_a_file].')
         self.assertEqual(msg['log_level'], LogLevel.debug)
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
@@ -195,7 +195,7 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the last log event from out log capture and test values
         msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Config option author_type has invalid' \
+        self.assertEqual(msg['text'], 'Config option author_type has invalid' \
                                          ' value [not_a_file].')
         self.assertEqual(msg['log_level'], LogLevel.debug)
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
@@ -223,7 +223,7 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the last log event from out log capture and test values
         msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Config option auth_type has invalid' \
+        self.assertEqual(msg['text'], 'Config option auth_type has invalid' \
                                          ' value [not_pam].')
         self.assertEqual(msg['log_level'], LogLevel.debug)
         self.assertEqual(msg['log_namespace'], 'freetacacs.configuration')
@@ -252,7 +252,7 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the last log event from out log capture and test values
         msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Unable to find file' \
+        self.assertEqual(msg['text'], 'Unable to find file' \
                       ' ./freetacacs/tests/data/configuration/etc/missing.json' \
                       ' specified by configuration option secrets_file.')
         self.assertEqual(msg['log_level'], LogLevel.debug)
@@ -282,7 +282,7 @@ class TestValidConfig(unittest.TestCase):
 
         # Extract the last log event from out log capture and test values
         msg = catcher[-1]
-        self.assertEqual(msg['message'], 'Unable to find file' \
+        self.assertEqual(msg['text'], 'Unable to find file' \
                       ' ./freetacacs/tests/data/configuration/etc/missing.json' \
                       ' specified by configuration option author_file.')
         self.assertEqual(msg['log_level'], LogLevel.debug)
