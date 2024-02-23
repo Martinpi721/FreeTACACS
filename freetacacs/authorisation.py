@@ -27,6 +27,10 @@ class MissingServiceArgument(Exception):
     """Raised when authorisation args do not include a service argument"""
 
 
+class MissingCmdArgument(Exception):
+    """Raised when authorisation arg service=shell but no cmd provided"""
+
+
 @dataclass
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
@@ -108,6 +112,8 @@ class AuthorRequestFields:
 
         validated_args = []
         service_included = False
+        cmd_included = False
+        cmd_required = False
 
         # Loop over the arguments and validate
         for argument in self.args:
@@ -128,12 +134,21 @@ class AuthorRequestFields:
 
             if args[0] == 'service':
                 service_included = True
+                if args[1] == 'shell':
+                    cmd_required = True
+
+            if args[0] == 'cmd':
+                cmd_included = True
 
             validated_args.append(argument)
 
         # A service argument must always be provided
         if not service_included:
             raise MissingServiceArgument('Arguments must contain a service')
+
+        # If service=shell then the cmd argument must exist
+        if cmd_required and not cmd_included:
+            raise MissingCmdArgument('When service=shell then cmd argument is required')
 
         # Assign validated args back to the args method
         self.args = validated_args
@@ -184,7 +199,7 @@ class TACACSPlusAuthorRequest(Packet):
     """Class to handle encoding/decoding of TACACS+ Authorisation REQUEST packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthorRequestFields(args=['service=shell']),
+                 fields=AuthorRequestFields(args=['service=system']),
                  secret=None):
         """Initialise a TACACS+ Authorisation REQUEST packet body
 
@@ -234,5 +249,23 @@ class TACACSPlusAuthorRequest(Packet):
         # |   arg N ...
         # +----------------+----------------+----------------+----------------+
 
-        pass
+        # Extend our parent class __init__ method
+        super().__init__(header, body, secret)
 
+        # Initialise the packet body fields
+        self._authen_method = None
+        self._priv_lvl = None
+        self._authen_type = None
+        self._authen_service = None
+        self._user_len = None
+        self._port_len = None
+        self._rem_addr_len = None
+        self._arg_cnt = None
+        self._user = None
+        self._port = None
+        self._remote_address = None
+        self._args = None
+
+        # If body is not empty nothing more is required from __init__
+        if len(self._body) > 0:
+            return None

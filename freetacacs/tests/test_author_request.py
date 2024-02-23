@@ -18,7 +18,8 @@ from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authorisation import (AuthorRequestFields,
-                                      MissingServiceArgument)
+                                      MissingServiceArgument,
+                                      MissingCmdArgument)
 
 
 class TestAuthorRequestFields(unittest.TestCase):
@@ -30,7 +31,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(arg_cnt='invalid',
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Argument Count should be of type int'
 
@@ -40,7 +41,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(authen_method='invalid',
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Authentication Method should be of type int'
 
@@ -50,7 +51,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(priv_lvl='invalid',
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Priviledge Level should be of type int'
 
@@ -60,7 +61,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(authen_type='invalid',
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Authentication Type should be of type int'
 
@@ -70,7 +71,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(authen_service='invalid',
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Authentication Service should be of type int'
 
@@ -79,7 +80,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         """Test we handle passing a invalid user field type"""
 
         with pytest.raises(TypeError) as e:
-            fields = AuthorRequestFields(user=123, args=['service=shell'])
+            fields = AuthorRequestFields(user=123, args=['service=system'])
 
         assert str(e.value) == 'User should be of type string'
 
@@ -88,7 +89,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         """Test we handle passing a invalid port field type"""
 
         with pytest.raises(TypeError) as e:
-            fields = AuthorRequestFields(port=123, args=['service=shell'])
+            fields = AuthorRequestFields(port=123, args=['service=system'])
 
         assert str(e.value) == 'Port should be of type string'
 
@@ -98,7 +99,7 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(remote_address=123,
-                                         args=['service=shell'])
+                                         args=['service=system'])
 
         assert str(e.value) == 'Remote Address should be of type string'
 
@@ -106,19 +107,19 @@ class TestAuthorRequestFields(unittest.TestCase):
     def test_default_author_request_fields_string(self):
         """Test we can get the default string representation of author request fields"""
 
-        args=['service=shell']
+        args=['service=system']
         fields = AuthorRequestFields(arg_cnt=len(args), args=args)
 
         assert str(fields) == 'priv_lvl: TAC_PLUS_PRIV_LVL_MIN, authen_method:' \
                               ' TAC_PLUS_AUTHEN_METH_NOT_SET, authen_service:' \
                               ' TAC_PLUS_AUTHEN_SVC_NONE, user: , port: ,' \
-                              ' arg_cnt: 1, remote_address: , arg_service=shell'
+                              ' arg_cnt: 1, remote_address: , arg_service=system'
 
 
     def test_default_author_request_fields_dict(self):
         """Test we can get the default dict representation of author request fields"""
 
-        args=['service=shell']
+        args=['service=system']
         fields = AuthorRequestFields(arg_cnt=len(args), args=args)
 
         assert vars(fields) == {
@@ -137,7 +138,7 @@ class TestAuthorRequestFields(unittest.TestCase):
     def test_set_author_request_fields(self):
         """Test we can set the author request fields"""
 
-        args=['service=shell']
+        args=['service=system']
         fields = AuthorRequestFields(arg_cnt=len(args),
                                      authen_method=flags.TAC_PLUS_AUTHEN_METH_ENABLE,
                                      priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
@@ -152,14 +153,14 @@ class TestAuthorRequestFields(unittest.TestCase):
                               ' authen_method: TAC_PLUS_AUTHEN_METH_ENABLE,' \
                               ' authen_service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
                               ' user: jsmith, port: python_tty0, arg_cnt: 1,' \
-                              ' remote_address: python_device, arg_service=shell'
+                              ' remote_address: python_device, arg_service=system'
 
 
     def test_invalid_argument_startswith_equal(self):
         """Test we can ignore a invalid argument that starts with ="""
 
         args=[
-               'service=shell',
+               'service=system',
                '=service',
                '==',
                '=',
@@ -180,7 +181,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         """Test we can ignore a invalid argument that starts with *"""
 
         args=[
-               'service=shell',
+               'service=system',
                '*service',
                '**',
                '*',
@@ -205,4 +206,15 @@ class TestAuthorRequestFields(unittest.TestCase):
              ]
 
         with pytest.raises(MissingServiceArgument) as e:
+            fields = AuthorRequestFields(arg_cnt=len(args), args=args)
+
+
+    def test_invalid_missing_cmd_argument(self):
+        """Test we can ignore a invalid argument that contains no seperator"""
+
+        args=[
+               'service=shell',
+             ]
+
+        with pytest.raises(MissingCmdArgument) as e:
             fields = AuthorRequestFields(arg_cnt=len(args), args=args)
