@@ -8,13 +8,19 @@ Classes:
 Functions:
     None
 """
+
+import re
 import struct
 from dataclasses import dataclass, field
+from twisted.logger import Logger
 import six
 
 # Local imports
 from freetacacs import flags
 from freetacacs.packet import TACACSPlusPacket as Packet
+
+# Setup the logger
+log = Logger()
 
 
 @dataclass
@@ -28,7 +34,7 @@ class AuthorRequestFields:
     port: str = ''
     arg_cnt: int = 1
     remote_address: str = ''
-    args: dict = field(default_factory=dict)
+    args: list = field(default_factory=list)
 
 
     # Validate the data
@@ -67,6 +73,59 @@ class AuthorRequestFields:
         if not isinstance(self.arg_cnt, int):
             raise TypeError('Argument Count should be of type int')
 
+        if not isinstance(self.args, list):
+            raise TypeError('Arguments should be of type list')
+
+        self._validate_args()
+
+
+    def _validate_args(self):
+        """Validate the authorisation arguments
+
+        The authorization arguments in both the REQUEST and the REPLY are
+        argument-value pairs. The argument and the value are in a single string
+        and are separated by either a "=" (0X3D) or a "*" (0X2A). The equals
+        sign indicates a mandatory argument. The asterisk indicates an optional
+        one. The value part of an argument-value pair may be empty, that is,
+        the length of the value may be zero.
+
+        Though the arguments allow extensibility, a common core set of
+        authorization arguments be supported by clients and servers;
+        See RFC8907 for details on contents of each field and authorisation
+        arguments.
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          None
+        """
+
+        validated_args = []
+
+        # Loop over the arguments and validate
+        for argument in self.args:
+            # Check that we have a argument name
+            if argument.startswith('=') or argument.startswith('*'):
+                log.warn(text=f'Ignoring invalid authorisation argument' \
+                              f' should not start with either [=*]')
+                continue
+
+            # Split out the argument from the value
+            seperator = re.findall(r'[=*]', argument)
+            try:
+                args = argument.split(seperator[0], 1)
+            except IndexError as e:
+                log.warn(text=f'Ignoring invalid authorisation argument'
+                              f' [{argument}]. No seperator.')
+                continue
+
+            validated_args.append(argument)
+
+        # Assign validated args back to the args method
+        self.args = validated_args
+
 
     def __str__(self):
         """String representation of the authorisation request fields
@@ -103,8 +162,8 @@ class AuthorRequestFields:
                  f' remote_address: {self.remote_address}'
 
         # Add the args to the string
-        for key, value in self.args.items():
-            fields += f', {key}: {value}'
+        for arg in self.args:
+            fields += f', arg_{arg}'
 
         return fields
 
@@ -122,11 +181,11 @@ class TACACSPlusAuthorRequest(Packet):
         dict(when creating).
 
         Fields dict must contain the following keys: authen_method, priv_lvl,
-        authen_type, authen_service, user, port, remote_address, arg_cnt,
-        arg_service, arg_protocol, arg_cmd, arg_cmd_arg, arg_acl, arg_inacl,
-        arg_outacl, arg_addr, arg_addr_pool, arg_timeout, arg_idletimeout,
-        arg_authcmd, arg_noescape, arg_nohangup, arg_priv_lvl. See RFC8907
-        for details on contents of each.
+        authen_type, authen_service, user, port, remote_address, arg_cnt. A
+        args dict should be provided containing the arg N authorisation arguments.
+        At the very least this dict MUST alwals contain a service argument.
+        See RFC8907 for details on contents of each field and authorisation
+        arguments.
 
         Args:
           header(obj): instance of a TACACSPlusHeader class
