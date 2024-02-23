@@ -17,7 +17,8 @@ from twisted.logger import LogLevel, capturedLogs
 from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
-from freetacacs.authorisation import AuthorRequestFields
+from freetacacs.authorisation import (AuthorRequestFields,
+                                      MissingServiceArgument)
 
 
 class TestAuthorRequestFields(unittest.TestCase):
@@ -158,6 +159,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         """Test we can ignore a invalid argument that starts with ="""
 
         args=[
+               'service=shell',
                '=service',
                '==',
                '=',
@@ -178,6 +180,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         """Test we can ignore a invalid argument that starts with *"""
 
         args=[
+               'service=shell',
                '*service',
                '**',
                '*',
@@ -194,35 +197,12 @@ class TestAuthorRequestFields(unittest.TestCase):
                                    ' should not start with either [=*]'
 
 
-    def test_invalid_argument_startswith_astrisk(self):
-        """Test we can ignore a invalid argument that starts with *"""
-
-        args=[
-               '*service',
-               '**',
-               '*',
-             ]
-
-        with capturedLogs() as events:
-            fields = AuthorRequestFields(arg_cnt=len(args), args=args)
-
-        assert events[0]['text'] == 'Ignoring invalid authorisation argument' \
-                                   ' should not start with either [=*]'
-        assert events[1]['text'] == 'Ignoring invalid authorisation argument' \
-                                   ' should not start with either [=*]'
-        assert events[2]['text'] == 'Ignoring invalid authorisation argument' \
-                                   ' should not start with either [=*]'
-
-
-    def test_invalid_argument_no_seperator(self):
+    def test_invalid_missing_service_argument(self):
         """Test we can ignore a invalid argument that contains no seperator"""
 
         args=[
-               'service',
+               'protocol=ppp',
              ]
 
-        with capturedLogs() as events:
+        with pytest.raises(MissingServiceArgument) as e:
             fields = AuthorRequestFields(arg_cnt=len(args), args=args)
-
-        assert events[0]['text'] == 'Ignoring invalid authorisation argument' \
-                                   ' [service]. No seperator.'

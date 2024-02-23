@@ -23,6 +23,10 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 log = Logger()
 
 
+class MissingServiceArgument(Exception):
+    """Raised when authorisation args do not include a service argument"""
+
+
 @dataclass
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
@@ -97,12 +101,13 @@ class AuthorRequestFields:
         Args:
           None
         Exceptions:
-          None
+          MissingServiceArgument
         Returns:
           None
         """
 
         validated_args = []
+        service_included = False
 
         # Loop over the arguments and validate
         for argument in self.args:
@@ -121,7 +126,14 @@ class AuthorRequestFields:
                               f' [{argument}]. No seperator.')
                 continue
 
+            if args[0] == 'service':
+                service_included = True
+
             validated_args.append(argument)
+
+        # A service argument must always be provided
+        if not service_included:
+            raise MissingServiceArgument('Arguments must contain a service')
 
         # Assign validated args back to the args method
         self.args = validated_args
@@ -172,7 +184,7 @@ class TACACSPlusAuthorRequest(Packet):
     """Class to handle encoding/decoding of TACACS+ Authorisation REQUEST packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthorRequestFields(),
+                 fields=AuthorRequestFields(args=['service=shell']),
                  secret=None):
         """Initialise a TACACS+ Authorisation REQUEST packet body
 
@@ -182,8 +194,8 @@ class TACACSPlusAuthorRequest(Packet):
 
         Fields dict must contain the following keys: authen_method, priv_lvl,
         authen_type, authen_service, user, port, remote_address, arg_cnt. A
-        args dict should be provided containing the arg N authorisation arguments.
-        At the very least this dict MUST alwals contain a service argument.
+        args list should be provided containing the arg N authorisation arguments.
+        At the very least this list MUST always contain a service argument.
         See RFC8907 for details on contents of each field and authorisation
         arguments.
 
