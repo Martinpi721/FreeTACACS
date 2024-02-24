@@ -226,10 +226,8 @@ class TACACSPlusAuthenStart(Packet):
         Exceptions:
           ValueError
         Returns:
-          fields(dict): containing body field name/value pairs
+          fields(obj): instance of AuthenStartFields dataclass
         """
-
-        fields = {}
 
         # Deobfuscate the packet if required
         raw = six.BytesIO(self._body)
@@ -257,9 +255,11 @@ class TACACSPlusAuthenStart(Packet):
                              ' client/server shared key probably does not' \
                              ' match') from e
 
-        return AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
-                                 self._authen_service, self._user, self._port,
-                                 self._remote_address, self._data)
+        fields = AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
+                                   self._authen_service, self._user, self._port,
+                                   self._remote_address, self._data)
+
+        return fields
 
 
     def __str__(self):
