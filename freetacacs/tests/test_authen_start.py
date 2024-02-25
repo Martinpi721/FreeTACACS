@@ -303,7 +303,7 @@ class TestAuthenStart:
         with pytest.raises(ValueError) as e:
             pkt.decode
 
-        assert str(e.value) == 'Unable to decode AuthenSTART packet. TACACS+' \
+        assert str(e.value) == 'Unable to decode AuthenStart packet. TACACS+' \
                                ' client/server shared key probably does not match'
 
 
@@ -328,7 +328,7 @@ class TestAuthenStart:
         with pytest.raises(ValueError) as e:
             pkt.decode
 
-        assert str(e.value) == 'Unable to decode AuthenSTART packet. TACACS+' \
+        assert str(e.value) == 'Unable to decode AuthenStart packet. TACACS+' \
                                ' client/server shared key probably does not match'
 
 
@@ -353,5 +353,5 @@ class TestAuthenStart:
         with pytest.raises(ValueError) as e:
             pkt.decode
 
-        assert str(e.value) == 'Unable to decode AuthenSTART packet. TACACS+' \
+        assert str(e.value) == 'Unable to decode AuthenStart packet. TACACS+' \
                                ' client/server shared key probably does not match'

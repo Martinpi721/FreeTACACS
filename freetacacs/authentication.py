@@ -251,7 +251,7 @@ class TACACSPlusAuthenStart(Packet):
             self._remote_address = body.read(self._rem_addr_len).decode('UTF-8')
             self._data = body.read(self._data_len).decode('UTF-8')
         except ValueError as e:
-            raise ValueError('Unable to decode AuthenSTART packet. TACACS+' \
+            raise ValueError('Unable to decode AuthenStart packet. TACACS+' \
                              ' client/server shared key probably does not' \
                              ' match') from e
 
