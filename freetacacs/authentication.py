@@ -255,9 +255,14 @@ class TACACSPlusAuthenStart(Packet):
                              ' client/server shared key probably does not' \
                              ' match') from e
 
-        fields = AuthenStartFields(self._action, self._priv_lvl, self._authen_type,
-                                   self._authen_service, self._user, self._port,
-                                   self._remote_address, self._data)
+        fields = AuthenStartFields(action=self._action,
+                                   priv_lvl=self._priv_lvl,
+                                   authen_type=self._authen_type,
+                                   authen_service=self._authen_service,
+                                   user=self._user,
+                                   port=self._port,
+                                   remote_address=self._remote_address,
+                                   data=self._data)
 
         return fields
 
