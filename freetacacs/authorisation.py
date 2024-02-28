@@ -389,3 +389,75 @@ class TACACSPlusAuthorRequest(Packet):
             count += 1
 
         return packet
+
+
+@dataclass
+class AuthorReplyFields:
+    """Defines Authorisation Reply packet fields"""
+
+    status: int
+    arg_cnt: int = 1
+    server_msg: str = ''
+    data: str = ''
+    args: list = field(default_factory=list)
+
+
+    # Validate the data
+    def __post_init__(self):
+        """Validate the authorisation request fields
+
+        Args:
+          None
+        Exceptions:
+          TypeError
+        Returns:
+          None
+        """
+
+        if not isinstance(self.status, int):
+            raise TypeError('Status should be of type int')
+
+        if not isinstance(self.arg_cnt, int):
+            raise TypeError('Argument Count should be of type int')
+
+        if not isinstance(self.server_msg, str):
+            raise TypeError('Server Message should be of type string')
+
+        if not isinstance(self.data, str):
+            raise TypeError('Data should be of type string')
+
+        if not isinstance(self.args, list):
+            raise TypeError('Arguments should be of type list')
+
+
+    def __str__(self):
+        """String representation of the authorisation reply fields
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          fields(str): containing the authorisation reply fields
+        """
+
+        # Convert the status flag codes back to human readable strings
+        result = filter(lambda item: item[1] == self.status,
+                                     flags.TAC_PLUS_AUTHOR_STATUS.items())
+        status = list(result)[0][0]
+
+        # Build the string representation
+        fields = f'status: {status}, arg_cnt: {self.arg_cnt},' \
+                 f' server_msg: {self.server_msg},' \
+                 f' data: {self.data}'
+
+        # Add the args to the string
+        for arg in self.args:
+            fields += f', arg_{arg}'
+
+        return fields
+
+
+class TACACSPlusAuthorReply(Packet):
+    """Class to handle encoding/decoding of TACACS+ Authorisation REPLY packet bodies"""
+    pass
