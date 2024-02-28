@@ -293,6 +293,7 @@ class TACACSPlusAuthenStart(Packet):
 @dataclass
 class AuthenReplyFields:
     """Defines Authentication Reply fields required to create a Reply packet"""
+
     status: int
     flags: int
     server_msg: str = ''
