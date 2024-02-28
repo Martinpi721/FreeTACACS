@@ -34,6 +34,7 @@ class MissingCmdArgument(Exception):
 @dataclass
 class AuthorRequestFields:
     """Defines Authorisation Request packet fields"""
+
     authen_method: int = 0x00
     priv_lvl: int = 0x00
     authen_type: int = 0x00
@@ -271,8 +272,8 @@ class TACACSPlusAuthorRequest(Packet):
         if len(self._body) > 0:
             return None
 
-        # If fields dict doesn't contain these keys then we are decoding a START
-        # rather than building a START packet
+        # If fields dict doesn't contain these keys then we are decoding a Request
+        # rather than building a Request packet
         try:
             self._authen_method = fields.authen_method
             self._priv_lvl = fields.priv_lvl
@@ -285,6 +286,7 @@ class TACACSPlusAuthorRequest(Packet):
             self._remote_address = fields.remote_address
             self._rem_addr_len = len(self._remote_address)
             self._args = fields.args
+            self._arg_cnt = len(self._args)
 
             for arg in self._args:
                 self._args_len.append(len(arg))
@@ -332,8 +334,7 @@ class TACACSPlusAuthorRequest(Packet):
             # Unpack each of the arguments
             for arg_len in self._args_len:
                 self._args.append(body.read(arg_len).decode('UTF-8'))
-
-        except ValueError as e:
+        except (struct.error, ValueError) as e:
             raise ValueError('Unable to decode AuthorRequest packet. TACACS+' \
                              ' client/server shared key probably does not' \
                              ' match') from e
@@ -374,7 +375,7 @@ class TACACSPlusAuthorRequest(Packet):
         # Add the argument lengths
         count = 1
         for arg_len in self._args_len:
-            packet += f', arg_{count}: {arg_len}'
+            packet += f', arg_{count}_len: {arg_len}'
             count += 1
 
         # Add the user/port and remote address
