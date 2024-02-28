@@ -264,8 +264,127 @@ class TACACSPlusAuthorRequest(Packet):
         self._user = None
         self._port = None
         self._remote_address = None
-        self._args = None
+        self._args_len = []
+        self._args = []
 
         # If body is not empty nothing more is required from __init__
         if len(self._body) > 0:
             return None
+
+        # If fields dict doesn't contain these keys then we are decoding a START
+        # rather than building a START packet
+        try:
+            self._authen_method = fields.authen_method
+            self._priv_lvl = fields.priv_lvl
+            self._authen_type = fields.authen_type
+            self._authen_service = fields.authen_service
+            self._user = fields.user
+            self._user_len = len(self._user)
+            self._port = fields.port
+            self._port_len = len(self._port)
+            self._remote_address = fields.remote_address
+            self._rem_addr_len = len(self._remote_address)
+            self._args = fields.args
+
+            for arg in self._args:
+                self._args_len.append(len(arg))
+        except TypeError:
+            raise
+
+
+    @property
+    def decode(self):
+        """Decode a TACAS+ Authorisation request packet body
+
+        Args:
+          None
+        Exceptions:
+          ValueError
+        Returns:
+          fields(obj): instance of AuthorRequestFields dataclass
+        """
+
+        # Deobfuscate the packet if required
+        raw = six.BytesIO(self._body)
+        if self._secret is not None:
+            body = six.BytesIO(self.deobfuscate)
+        else:
+            body = raw
+
+        # Decode the packet body
+        try:
+            self._authen_method, self._priv_lvl = struct.unpack('BB', body.read(2))
+            self._authen_type, self._authen_service = struct.unpack('BB', body.read(2))
+
+            (self._user_len,
+             self._port_len,
+             self._rem_addr_len,
+             self._arg_cnt) = struct.unpack('BBBB', body.read(4))
+
+            # Unpack the length of each argument
+            for x in range(0, self._arg_cnt):
+                self._args_len.append(struct.unpack('B', body.read(1))[0])
+
+            self._user = body.read(self._user_len).decode('UTF-8')
+            self._port = body.read(self._port_len).decode('UTF-8')
+            self._remote_address = body.read(self._rem_addr_len).decode('UTF-8')
+
+            # Unpack each of the arguments
+            for arg_len in self._args_len:
+                self._args.append(body.read(arg_len).decode('UTF-8'))
+
+        except ValueError as e:
+            raise ValueError('Unable to decode AuthorRequest packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
+
+        fields = AuthorRequestFields(authen_method=self._authen_method,
+                                     priv_lvl=self._priv_lvl,
+                                     authen_type=self._authen_type,
+                                     authen_service=self._authen_service,
+                                     user=self._user,
+                                     port=self._port,
+                                     remote_address=self._remote_address,
+                                     arg_cnt=self._arg_cnt,
+                                     args=self._args)
+
+        return fields
+
+
+    def __str__(self):
+        """String representation of the TACACS+ packet
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(str): containing the TACACS+ packet body
+        """
+
+        # Build the string representation
+        packet = f'authen_method: {self._authen_method},' \
+                 f' priv_lvl: {self._priv_lvl},' \
+                 f' authen_type: {self._authen_type},' \
+                 f' authen_service: {self._authen_service},' \
+                 f' user_len: {self._user_len}, port_len: {self._port_len},' \
+                 f' rem_addr_len: {self._rem_addr_len},' \
+                 f' arg_cnt: {self._arg_cnt}'
+
+        # Add the argument lengths
+        count = 1
+        for arg_len in self._args_len:
+            packet += f', arg_{count}: {arg_len}'
+            count += 1
+
+        # Add the user/port and remote address
+        packet += f', user: {self._user}, port: {self._port}' \
+                  f', rem_addr: {self._remote_address}'
+
+        # Add the argument values
+        count = 1
+        for arg in self._args:
+            packet += f', arg_{count}: {arg}'
+            count += 1
+
+        return packet

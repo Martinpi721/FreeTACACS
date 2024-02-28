@@ -20,6 +20,7 @@ from freetacacs.header import TACACSPlusHeader as Header
 from freetacacs.authorisation import (AuthorRequestFields,
                                       MissingServiceArgument,
                                       MissingCmdArgument)
+from freetacacs.authorisation import TACACSPlusAuthorRequest as AuthorRequestPacket
 
 
 class TestAuthorRequestFields(unittest.TestCase):
@@ -218,3 +219,46 @@ class TestAuthorRequestFields(unittest.TestCase):
 
         with pytest.raises(MissingCmdArgument) as e:
             fields = AuthorRequestFields(arg_cnt=len(args), args=args)
+
+
+class TestAuthorRequest(unittest.TestCase):
+    """Test class for testing the Authorisation Request class"""
+
+    def test_create_instance_with_body(self):
+        """Test we can create a instance of TACACSPlusAuthorRequest class"""
+
+        raw_pkt = b'\xc0\x02\x01\x004\x04\x12\xe7\x00\x00\x005\xabh\x1e\xb8(\x811\xae8\xb2\xc4\xa8a\x97pj\xc7\x9dj~\xa7\xe3\xba\xca+^\x13DP2\x1b\x8e\x80\x0f\xf5\x8f\x05j\xb6\xd6\x93\xb7 Nd\xb4\x05\xc9\xaa\xd8\xc3\xab\x9b'
+
+        version = 192
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 872682215
+        length = 53
+
+        # What should be returned when we call __str__ on object
+        required_str = 'authen_method: 6, priv_lvl: 0, authen_type: 1,' \
+                ' authen_service: 1, user_len: 6, port_len: 11,' \
+                ' rem_addr_len: 13, arg_cnt: 1, arg_1: 14, user: myuser,' \
+                ' port: python_tty0, rem_addr: python_device,' \
+                ' arg_1: service=system'
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        # Convert packet to a byte-stream and create Authorisation request instance
+        raw = six.BytesIO(raw_pkt)
+        raw.seek(12)
+        pkt = AuthorRequestPacket(header, body=raw.read(), secret='test')
+
+        fields = pkt.decode
+
+        assert isinstance(pkt, AuthorRequestPacket)
+        assert fields.authen_method == 6
+        assert fields.priv_lvl == 0
+        assert fields.authen_type == 1
+        assert fields.authen_service == 1
+        assert fields.user == 'myuser'
+        assert fields.port == 'python_tty0'
+        assert fields.remote_address == 'python_device'
+        assert fields.args == ['service=system']
+        assert pkt.length == 53
+        assert str(pkt) == required_str
