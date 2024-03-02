@@ -115,7 +115,7 @@ class TestAuthorRequestFields(unittest.TestCase):
         assert str(fields) == 'priv_lvl: TAC_PLUS_PRIV_LVL_MIN, authen_method:' \
                               ' TAC_PLUS_AUTHEN_METH_NOT_SET, authen_service:' \
                               ' TAC_PLUS_AUTHEN_SVC_NONE, user: , port: ,' \
-                              ' arg_cnt: 1, remote_address: , arg_service=system'
+                              ' arg_cnt: 1, remote_address: , arg_1: service=system'
 
 
     def test_default_author_request_fields_dict(self):
@@ -155,7 +155,7 @@ class TestAuthorRequestFields(unittest.TestCase):
                               ' authen_method: TAC_PLUS_AUTHEN_METH_ENABLE,' \
                               ' authen_service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
                               ' user: jsmith, port: python_tty0, arg_cnt: 1,' \
-                              ' remote_address: python_device, arg_service=system'
+                              ' remote_address: python_device, arg_1: service=system'
 
 
     def test_invalid_argument_startswith_equal(self):

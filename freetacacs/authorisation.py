@@ -2,8 +2,13 @@
 Module implements TACACS+ authorisation packets
 
 Classes:
+    AuthorFields
+    AuthorRequestFields
+    AuthorReplyFields
     TACACSPlusAuthorRequest
     TACACSPlusAuthorResponse
+    MissingServiceArgument
+    MissingCmdArgument
 
 Functions:
     None
@@ -32,60 +37,11 @@ class MissingCmdArgument(Exception):
 
 
 @dataclass
-class AuthorRequestFields:
-    """Defines Authorisation Request packet fields"""
+class AuthorFields:
+    """Defines base Authorisation packet fields"""
 
-    authen_method: int = 0x00
-    priv_lvl: int = 0x00
-    authen_type: int = 0x00
-    authen_service: int = 0x00
-    user: str = ''
-    port: str = ''
     arg_cnt: int = 1
-    remote_address: str = ''
     args: list = field(default_factory=list)
-
-
-    # Validate the data
-    def __post_init__(self):
-        """Validate the authorisation request fields
-
-        Args:
-          None
-        Exceptions:
-          TypeError
-        Returns:
-          None
-        """
-
-        if not isinstance(self.authen_method, int):
-            raise TypeError('Authentication Method should be of type int')
-
-        if not isinstance(self.priv_lvl, int):
-            raise TypeError('Priviledge Level should be of type int')
-
-        if not isinstance(self.authen_type, int):
-            raise TypeError('Authentication Type should be of type int')
-
-        if not isinstance(self.authen_service, int):
-            raise TypeError('Authentication Service should be of type int')
-
-        if not isinstance(self.user, str):
-            raise TypeError('User should be of type string')
-
-        if not isinstance(self.port, str):
-            raise TypeError('Port should be of type string')
-
-        if not isinstance(self.remote_address, str):
-            raise TypeError('Remote Address should be of type string')
-
-        if not isinstance(self.arg_cnt, int):
-            raise TypeError('Argument Count should be of type int')
-
-        if not isinstance(self.args, list):
-            raise TypeError('Arguments should be of type list')
-
-        self._validate_args()
 
 
     def _validate_args(self):
@@ -155,6 +111,63 @@ class AuthorRequestFields:
         self.args = validated_args
 
 
+@dataclass
+class AuthorRequestFields(AuthorFields):
+    """Defines Authorisation Request packet fields"""
+
+    authen_method: int = 0x00
+    priv_lvl: int = 0x00
+    authen_type: int = 0x00
+    authen_service: int = 0x00
+    user: str = ''
+    port: str = ''
+    remote_address: str = ''
+
+
+    # Validate the data
+    def __post_init__(self):
+        """Validate the authorisation request fields
+
+        Args:
+          None
+        Exceptions:
+          TypeError
+        Returns:
+          None
+        """
+
+        if not isinstance(self.authen_method, int):
+            raise TypeError('Authentication Method should be of type int')
+
+        if not isinstance(self.priv_lvl, int):
+            raise TypeError('Priviledge Level should be of type int')
+
+        if not isinstance(self.authen_type, int):
+            raise TypeError('Authentication Type should be of type int')
+
+        if not isinstance(self.authen_service, int):
+            raise TypeError('Authentication Service should be of type int')
+
+        if not isinstance(self.user, str):
+            raise TypeError('User should be of type string')
+
+        if not isinstance(self.port, str):
+            raise TypeError('Port should be of type string')
+
+        if not isinstance(self.remote_address, str):
+            raise TypeError('Remote Address should be of type string')
+
+        if not isinstance(self.arg_cnt, int):
+            raise TypeError('Argument Count should be of type int')
+
+        if not isinstance(self.args, list):
+            raise TypeError('Arguments should be of type list')
+
+        # Validate args if we have some
+        if len(self.args) > 0:
+            self._validate_args()
+
+
     def __str__(self):
         """String representation of the authorisation request fields
 
@@ -190,8 +203,10 @@ class AuthorRequestFields:
                  f' remote_address: {self.remote_address}'
 
         # Add the args to the string
+        count = 1
         for arg in self.args:
-            fields += f', arg_{arg}'
+            fields += f', arg_{count}: {arg}'
+            count += 1
 
         return fields
 
@@ -200,7 +215,7 @@ class TACACSPlusAuthorRequest(Packet):
     """Class to handle encoding/decoding of TACACS+ Authorisation REQUEST packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthorRequestFields(args=['service=system']),
+                 fields=AuthorRequestFields(),
                  secret=None):
         """Initialise a TACACS+ Authorisation REQUEST packet body
 
@@ -235,19 +250,19 @@ class TACACSPlusAuthorRequest(Packet):
         # +----------------+----------------+----------------+----------------+
         # |   arg 1 len    |   arg 2 len    |      ...       |   arg N len    |
         # +----------------+----------------+----------------+----------------+
-        # |   user ...
+        # |   user ...                                                        |
         # +----------------+----------------+----------------+----------------+
-        # |   port ...
+        # |   port ...                                                        |
         # +----------------+----------------+----------------+----------------+
-        # |   rem_addr ...
+        # |   rem_addr ...                                                    |
         # +----------------+----------------+----------------+----------------+
-        # |   arg 1 ...
+        # |   arg 1 ...                                                       |
         # +----------------+----------------+----------------+----------------+
-        # |   arg 2 ...
+        # |   arg 2 ...                                                       |
         # +----------------+----------------+----------------+----------------+
-        # |   ...
+        # |   ...                                                             |
         # +----------------+----------------+----------------+----------------+
-        # |   arg N ...
+        # |   arg N ...                                                       |
         # +----------------+----------------+----------------+----------------+
 
         # Extend our parent class __init__ method
@@ -392,14 +407,12 @@ class TACACSPlusAuthorRequest(Packet):
 
 
 @dataclass
-class AuthorReplyFields:
+class AuthorReplyFields(AuthorFields):
     """Defines Authorisation Reply packet fields"""
 
-    status: int
-    arg_cnt: int = 1
+    status: int = 0x00
     server_msg: str = ''
     data: str = ''
-    args: list = field(default_factory=list)
 
 
     # Validate the data
@@ -428,6 +441,10 @@ class AuthorReplyFields:
 
         if not isinstance(self.args, list):
             raise TypeError('Arguments should be of type list')
+
+        # Validate args if we have some
+        if len(self.args) > 0:
+            self._validate_args()
 
 
     def __str__(self):

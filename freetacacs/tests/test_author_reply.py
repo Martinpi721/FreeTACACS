@@ -12,27 +12,21 @@ Functions:
 import six
 import pytest
 from twisted.trial import unittest
+from twisted.logger import LogLevel, capturedLogs
 
 # Import code to be tested
 from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 
-from freetacacs.authorisation import AuthorReplyFields
+from freetacacs.authorisation import (AuthorReplyFields,
+                                      MissingServiceArgument,
+                                      MissingCmdArgument)
 from freetacacs.authorisation import TACACSPlusAuthorReply as AuthorReplyPacket
 
 
 class TestAuthorReplyFields(unittest.TestCase):
     """Test class for testing the Authorisation request Fields class"""
-
-
-    def test_missing_status(self):
-        """Test we handle passing a missing field type"""
-
-        with pytest.raises(TypeError) as e:
-            fields = AuthorReplyFields()
-
-        assert str(e.value) == "__init__() missing 1 required positional argument: 'status'"
 
 
     def test_invalid_status(self):
@@ -92,6 +86,100 @@ class TestAuthorReplyFields(unittest.TestCase):
         assert str(fields) == 'status: TAC_PLUS_AUTHOR_STATUS_PASS_ADD,' \
                               ' arg_cnt: 1, server_msg: ,' \
                               ' data: '
+
+
+    def test_default_author_reply_fields_dict(self):
+        """Test we can get the default dict representation of author reply fields"""
+
+        fields = AuthorReplyFields(status=flags.TAC_PLUS_AUTHOR_STATUS_PASS_ADD)
+
+        assert vars(fields) == {
+                                 'status'     : 1,
+                                 'arg_cnt'    : 1,
+                                 'server_msg' : '',
+                                 'data'       : '',
+                                 'args'       : []
+                                }
+
+
+    def test_set_author_reply_fields(self):
+        """Test we can set the author request fields"""
+
+        args=['service=shell', 'cmd=ls -l']
+        fields = AuthorReplyFields(status=flags.TAC_PLUS_AUTHOR_STATUS_PASS_ADD,
+                                   arg_cnt=len(args),
+                                   server_msg='Message from server',
+                                   data='Data from server',
+                                   args=args)
+
+        assert str(fields) == 'status: TAC_PLUS_AUTHOR_STATUS_PASS_ADD,' \
+                              ' arg_cnt: 2, server_msg: Message from server,' \
+                              ' data: Data from server, arg_1: service=shell,' \
+                              ' arg_2: cmd=ls -l'
+
+
+    def test_invalid_argument_startswith_equal(self):
+        """Test we can ignore a invalid argument that starts with ="""
+
+        args=[
+               'service=system',
+               '=service',
+               '==',
+               '=',
+             ]
+
+        with capturedLogs() as events:
+            fields = AuthorReplyFields(arg_cnt=len(args), args=args)
+
+        assert events[0]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+        assert events[1]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+        assert events[2]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+
+
+    def test_invalid_argument_startswith_astrisk(self):
+        """Test we can ignore a invalid argument that starts with *"""
+
+        args=[
+               'service=system',
+               '*service',
+               '**',
+               '*',
+             ]
+
+        with capturedLogs() as events:
+            fields = AuthorReplyFields(arg_cnt=len(args), args=args)
+
+        assert events[0]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+        assert events[1]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+        assert events[2]['text'] == 'Ignoring invalid authorisation argument' \
+                                   ' should not start with either [=*]'
+
+
+    def test_invalid_missing_service_argument(self):
+        """Test we can handle the missing service argument"""
+
+        args=[
+               'protocol=ppp',
+             ]
+
+        with pytest.raises(MissingServiceArgument) as e:
+            fields = AuthorReplyFields(arg_cnt=len(args), args=args)
+
+
+    def test_invalid_missing_cmd_argument(self):
+        """Test we can handle the missing cmd argument"""
+
+        args=[
+               'service=shell',
+             ]
+
+        with pytest.raises(MissingCmdArgument) as e:
+            fields = AuthorReplyFields(arg_cnt=len(args), args=args)
 
 
 class TestAuthorReply(unittest.TestCase):
