@@ -189,3 +189,25 @@ class TestAuthorReply(unittest.TestCase):
         """Test we can create a instance of TACACSPlusAuthorReply class"""
         pass
 
+
+    def test_create_instance_with_fields(self):
+        """Test we can create an instance from TACACSPlusAuthorReply class"""
+
+        version = 192
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 2620865572
+        length = 40
+
+        # Configure the header
+        header = Header(HeaderFields(version, packet_type, session_id, length))
+
+        args = ['service=system']
+        fields = AuthorReplyFields(status=0x00, arg_cnt=len(args),
+                                   server_msg='test', data='test', args=args)
+        pkt = AuthorReplyPacket(header, fields=fields, secret='test')
+
+        assert isinstance(pkt, AuthorReplyPacket)
+        assert str(pkt) == 'status: 0, arg_cnt: 1, server_msg_len: 4,' \
+                ' data_len: 4, arg_1_len: 14, server_msg: test, data: test,' \
+                ' arg_1: service=system'
+        assert bytes(pkt) == b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x00\x1d\x83\xac\xf7\xcb\xc9!\xe7\xe5\xcc/\xa2=9v\xc1Z\xb6\xd3\xfb\x8d\x8c\xf6\x95\xdfWL\x80\xe5\xc0'
