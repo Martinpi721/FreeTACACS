@@ -196,10 +196,11 @@ class TestAuthorReply(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 2620865572
-        length = 40
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         args = ['service=system']
         fields = AuthorReplyFields(status=0x00, arg_cnt=len(args),

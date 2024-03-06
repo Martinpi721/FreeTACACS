@@ -233,7 +233,6 @@ class TestAuthorRequest(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
-        length = 53
 
         # What should be returned when we call __str__ on object
         required_str = 'authen_method: 6, priv_lvl: 0, authen_type: 1,' \
@@ -243,7 +242,9 @@ class TestAuthorRequest(unittest.TestCase):
                 ' arg_1: service=system'
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
         raw = six.BytesIO(raw_pkt)
@@ -271,10 +272,11 @@ class TestAuthorRequest(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 2620865572
-        length = 53
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         fields = AuthorRequestFields(authen_method=flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS,
                                      priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
@@ -302,10 +304,11 @@ class TestAuthorRequest(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 1
-        length = 53
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
         raw = six.BytesIO(raw_pkt)
@@ -327,10 +330,11 @@ class TestAuthorRequest(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
-        length = 53
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
         raw = six.BytesIO(raw_pkt)
@@ -352,10 +356,11 @@ class TestAuthorRequest(unittest.TestCase):
         version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
-        length = 53
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
         raw = six.BytesIO(raw_pkt)
