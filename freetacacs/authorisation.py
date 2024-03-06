@@ -329,6 +329,7 @@ class TACACSPlusAuthorRequest(Packet):
 
         # Decode the packet body
         try:
+            # B = unsigned char
             self._authen_method, self._priv_lvl = struct.unpack('BB', body.read(2))
             self._authen_type, self._authen_service = struct.unpack('BB', body.read(2))
 
@@ -341,6 +342,7 @@ class TACACSPlusAuthorRequest(Packet):
             for x in range(0, self._arg_cnt):
                 self._args_len.append(struct.unpack('B', body.read(1))[0])
 
+            # Byte decode
             self._user = body.read(self._user_len).decode('UTF-8')
             self._port = body.read(self._port_len).decode('UTF-8')
             self._remote_address = body.read(self._rem_addr_len).decode('UTF-8')
@@ -532,7 +534,9 @@ class TACACSPlusAuthorReply(Packet):
         self._status = None
         self._arg_cnt = None
         self._server_msg = None
+        self._server_msg_len = None
         self._data = None
+        self._data_len = None
         self._args_len = []
         self._args = []
 
@@ -595,6 +599,57 @@ class TACACSPlusAuthorReply(Packet):
         self._header.length = len(self._body)
 
         return None
+
+
+    @property
+    def decode(self):
+        """Decode a TACAS+ Authorisation reply packet body
+
+        Args:
+          None
+        Exceptions:
+          ValueError
+        Returns:
+          fields(obj): instance of AuthorReplyFields dataclass
+        """
+
+        # Deobfuscate the packet if required
+        raw = six.BytesIO(self._body)
+        if self._secret is not None:
+            body = six.BytesIO(self.deobfuscate)
+        else:
+            body = raw
+
+        # Decode the packet body
+        try:
+            # B = unsigned char
+            self._status, self._arg_cnt = struct.unpack('BB', body.read(2))
+            # !H = network-order (big-endian) unsigned short
+            self._server_msg_len, self._data_len = struct.unpack('!HH', body.read(4))
+
+            # Unpack the length of each argument
+            for x in range(0, self._arg_cnt):
+                self._args_len.append(struct.unpack('B', body.read(1))[0])
+
+            # Byte decode
+            self._server_msg = body.read(self._server_msg_len).decode('UTF-8')
+            self._data = body.read(self._data_len).decode('UTF-8')
+
+            # Byte decode each of the arguments
+            for arg_len in self._args_len:
+                self._args.append(body.read(arg_len).decode('UTF-8'))
+        except (struct.error, ValueError) as e:
+            raise ValueError('Unable to decode AuthorReply packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
+
+        fields = AuthorReplyFields(status=self._status,
+                                   server_msg=self._server_msg,
+                                   data=self._data,
+                                   arg_cnt=self._arg_cnt,
+                                   args=self._args)
+
+        return fields
 
 
     def __str__(self):

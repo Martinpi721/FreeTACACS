@@ -187,7 +187,34 @@ class TestAuthorReply(unittest.TestCase):
 
     def test_create_instance_with_body(self):
         """Test we can create a instance of TACACSPlusAuthorReply class"""
-        pass
+
+        raw_pkt = b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x00\x1d\x83\xac\xf7\xcb\xc9!\xe7\xe5\xcc/\xa2=9v\xc1Z\xb6\xd3\xfb\x8d\x8c\xf6\x95\xdfWL\x80\xe5\xc0'
+
+        version = 192
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 2620865572
+
+        # Configure the header
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
+
+        # Convert packet to a byte-stream and create Authorisation reply instance
+        raw = six.BytesIO(raw_pkt)
+        raw.seek(12)
+        pkt = AuthorReplyPacket(header=header, body=raw.read(), secret='test')
+
+        fields = pkt.decode
+
+        assert isinstance(pkt, AuthorReplyPacket)
+        assert fields.status == 0x00
+        assert fields.arg_cnt == 1
+        assert fields.server_msg == 'test'
+        assert fields.data == 'test'
+        assert fields.args == ['service=system']
+        assert str(pkt) == 'status: 0, arg_cnt: 1, server_msg_len: 4,' \
+                ' data_len: 4, arg_1_len: 14, server_msg: test, data: test,' \
+                ' arg_1: service=system'
 
 
     def test_create_instance_with_fields(self):
@@ -212,3 +239,56 @@ class TestAuthorReply(unittest.TestCase):
                 ' data_len: 4, arg_1_len: 14, server_msg: test, data: test,' \
                 ' arg_1: service=system'
         assert bytes(pkt) == b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x00\x1d\x83\xac\xf7\xcb\xc9!\xe7\xe5\xcc/\xa2=9v\xc1Z\xb6\xd3\xfb\x8d\x8c\xf6\x95\xdfWL\x80\xe5\xc0'
+
+
+    def test_incorrect_session_id(self):
+        """Test we can handle a invalid session id"""
+
+        raw_pkt = b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x00\x1d\x83\xac\xf7\xcb\xc9!\xe7\xe5\xcc/\xa2=9v\xc1Z\xb6\xd3\xfb\x8d\x8c\xf6\x95\xdfWL\x80\xe5\xc0'
+
+        version = 192
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 1
+
+        # Configure the header
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
+
+        # Convert packet to a byte-stream and create Authorisation request instance
+        raw = six.BytesIO(raw_pkt)
+        raw.seek(12)
+        pkt = AuthorReplyPacket(header, body=raw.read(), secret='test')
+
+        with pytest.raises(ValueError) as e:
+            pkt.decode
+
+        assert str(e.value) == 'Unable to decode AuthorReply packet. TACACS+' \
+                               ' client/server shared key probably does not match'
+
+
+    def test_shared_key_mismatch(self):
+        """Test we can handle client/server shared key mismatch"""
+
+        raw_pkt = b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x00\x1d\x83\xac\xf7\xcb\xc9!\xe7\xe5\xcc/\xa2=9v\xc1Z\xb6\xd3\xfb\x8d\x8c\xf6\x95\xdfWL\x80\xe5\xc0'
+
+        version = 192
+        packet_type = flags.TAC_PLUS_AUTHOR
+        session_id = 2620865572
+
+        # Configure the header
+        header = Header(HeaderFields(version=version,
+                                     packet_type=packet_type,
+                                     session_id=session_id))
+
+        # Convert packet to a byte-stream and create Authorisation request instance
+        raw = six.BytesIO(raw_pkt)
+        raw.seek(12)
+        pkt = AuthorReplyPacket(header, body=raw.read(), secret='incorrect')
+
+        with pytest.raises(ValueError) as e:
+            pkt.decode
+
+        assert str(e.value) == 'Unable to decode AuthorReply packet. TACACS+' \
+                               ' client/server shared key probably does not match'
+
