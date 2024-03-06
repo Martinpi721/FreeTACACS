@@ -49,13 +49,13 @@ class TestAuthorRequestFields(unittest.TestCase):
 
 
     def test_invalid_priv_lvl(self):
-        """Test we handle passing a invalid priviledge level field type"""
+        """Test we handle passing a invalid privilege level field type"""
 
         with pytest.raises(TypeError) as e:
             fields = AuthorRequestFields(priv_lvl='invalid',
                                          args=['service=system'])
 
-        assert str(e.value) == 'Priviledge Level should be of type int'
+        assert str(e.value) == 'Privilege Level should be of type int'
 
 
     def test_invalid_authen_type(self):
