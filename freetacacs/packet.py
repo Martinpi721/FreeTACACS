@@ -3,6 +3,8 @@ Module implements the base TACACS+ packet class
 
 Classes:
     TACACSPlusPacket
+    RequestFields
+    ReplyFields
 
 Functions:
     None
@@ -11,9 +13,172 @@ Functions:
 import struct
 import logging
 from hashlib import md5
+from dataclasses import dataclass
+from twisted.logger import Logger
 import six
+import re
 
-log = logging.getLogger(__name__)
+# Setup the logger
+log = Logger()
+
+
+class MissingServiceArgument(Exception):
+    """Raised when authorisation args do not include a service argument"""
+
+
+class MissingCmdArgument(Exception):
+    """Raised when authorisation arg service=shell but no cmd provided"""
+
+
+@dataclass
+class BaseFields:
+    """Defines base packet fields validator.
+
+    Used as a base class only. This is never used directly to create
+    a instance. Use the relevant AuthenStart/AuthorRequest/AccountRequest
+    class instead.
+    """
+
+    def _validate_args(self):
+        """Validate the authorisation arguments
+
+        The authorization arguments in both the REQUEST and the REPLY are
+        argument-value pairs. The argument and the value are in a single string
+        and are separated by either a "=" (0X3D) or a "*" (0X2A). The equals
+        sign indicates a mandatory argument. The asterisk indicates an optional
+        one. The value part of an argument-value pair may be empty, that is,
+        the length of the value may be zero.
+
+        Though the arguments allow extensibility, a common core set of
+        authorization arguments be supported by clients and servers;
+        See RFC8907 for details on contents of each field and authorisation
+        arguments.
+
+        Args:
+          None
+        Exceptions:
+          MissingServiceArgument
+        Returns:
+          None
+        """
+
+        validated_args = []
+        service_included = False
+        cmd_included = False
+        cmd_required = False
+
+        # Loop over the arguments and validate
+        for argument in self.args:
+            # Check that we have a argument name
+            if argument.startswith('=') or argument.startswith('*'):
+                log.warn(text=f'Ignoring invalid authorisation argument' \
+                              f' should not start with either [=*]')
+                continue
+
+            # Split out the argument from the value
+            seperator = re.findall(r'[=*]', argument)
+            try:
+                args = argument.split(seperator[0], 1)
+            except IndexError as e:
+                log.warn(text=f'Ignoring invalid authorisation argument'
+                              f' [{argument}]. No seperator.')
+                continue
+
+            if args[0] == 'service':
+                service_included = True
+                if args[1] == 'shell':
+                    cmd_required = True
+
+            if args[0] == 'cmd':
+                cmd_included = True
+
+            validated_args.append(argument)
+
+        # A service argument must always be provided
+        if not service_included:
+            raise MissingServiceArgument('Arguments must contain a service')
+
+        # If service=shell then the cmd argument must exist
+        if cmd_required and not cmd_included:
+            raise MissingCmdArgument('When service=shell then cmd argument is required')
+
+        # Assign validated args back to the args method
+        self.args = validated_args
+
+
+@dataclass
+class RequestFields(BaseFields):
+    """Defines base Start/Request packet fields.
+
+    Used as a base class only. This is never used directly to create
+    a instance. Use the relevant AuthenStart/AuthorRequest/AccountRequest
+    class instead.
+    """
+
+    priv_lvl: int = 0x00
+    authen_type: int = 0x00
+    authen_service: int = 0x00
+    user: str = ''
+    port: str = ''
+    remote_address: str = ''
+
+    # Validate the data
+    def __post_init__(self):
+        if not isinstance(self.priv_lvl, int):
+            raise TypeError('Privilege Level should be of type int')
+
+        if not isinstance(self.authen_type, int):
+            raise TypeError('Authentication Type should be of type int')
+
+        if not isinstance(self.authen_service, int):
+            raise TypeError('Authentication Service should be of type int')
+
+        if not isinstance(self.user, str):
+            raise TypeError('User should be of type string')
+
+        if not isinstance(self.port, str):
+            raise TypeError('Port should be of type string')
+
+        if not isinstance(self.remote_address, str):
+            raise TypeError('Remote Address should be of type string')
+
+
+@dataclass
+class ReplyFields(BaseFields):
+    """Defines base Reply packet fields.
+
+    Used as a base class only. This is never used directly to create
+    a instance. Use the relevant AuthenReply/AuthorReply/AccountReply
+    class instead.
+    """
+
+    status: int = 0x00
+    server_msg: str = ''
+    data: str = ''
+
+
+    # Validate the data
+    def __post_init__(self):
+        """Validate the authorisation request fields
+
+        Args:
+          None
+        Exceptions:
+          TypeError
+        Returns:
+          None
+        """
+
+        if not isinstance(self.status, int):
+            raise TypeError('Status should be of type int')
+
+        if not isinstance(self.server_msg, str):
+            raise TypeError('Server Message should be of type string')
+
+        if not isinstance(self.data, str):
+            raise TypeError('Data should be of type string')
+
+
 
 class TACACSPlusPacket:
     """Base class to handle encoding/decoding TACACS+ packet bodies.

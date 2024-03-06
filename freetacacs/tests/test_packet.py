@@ -2,12 +2,16 @@
 Module provides unit tests for the packet module
 
 Classes:
+    TestRequestFields
+    TestReplyFields
     TestTACACSPlusPacket
 
 Functions:
     None
 """
 
+import pytest
+from twisted.trial import unittest
 import six
 
 # Import code to be tested
@@ -16,7 +20,96 @@ from freetacacs.packet import TACACSPlusPacket as Packet
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 
-# Import exceptions
+from freetacacs.packet import RequestFields, ReplyFields
+
+
+class TestRequestFields(unittest.TestCase):
+    """Test class for testing the Request Fields class"""
+
+    def test_invalid_priv_lvl(self):
+        """Test we handle passing a invalid privilege level field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(priv_lvl='invalid')
+
+        assert str(e.value) == 'Privilege Level should be of type int'
+
+
+    def test_invalid_authen_type(self):
+        """Test we handle passing a invalid authentication method field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(authen_type='invalid')
+
+        assert str(e.value) == 'Authentication Type should be of type int'
+
+
+    def test_invalid_authen_service(self):
+        """Test we handle passing a invalid authentication service type field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(authen_service='invalid')
+
+        assert str(e.value) == 'Authentication Service should be of type int'
+
+
+    def test_invalid_user(self):
+        """Test we handle passing a invalid user field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(user=123)
+
+        assert str(e.value) == 'User should be of type string'
+
+
+    def test_invalid_port(self):
+        """Test we handle passing a invalid port field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(port=123)
+
+        assert str(e.value) == 'Port should be of type string'
+
+
+    def test_invalid_remote_address(self):
+        """Test we handle passing a invalid remote address field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = RequestFields(remote_address=123)
+
+        assert str(e.value) == 'Remote Address should be of type string'
+
+
+class TestReplyFields(unittest.TestCase):
+    """Test class for testing the Reply Fields class"""
+
+    def test_invalid_status(self):
+        """Test we handle passing a invalid status field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = ReplyFields(status='invalid')
+
+        assert str(e.value) == 'Status should be of type int'
+
+
+    def test_invalid_server_message(self):
+        """Test we handle passing a invalid server_msg field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = ReplyFields(server_msg=1)
+
+        assert str(e.value) == 'Server Message should be of type string'
+
+
+    def test_invalid_data(self):
+        """Test we handle passing a invalid data field type"""
+
+        with pytest.raises(TypeError) as e:
+            fields = ReplyFields(data=1)
+
+        assert str(e.value) == 'Data should be of type string'
+
+
 
 class TestTACACSPlusPacket:
     """Test class for testing the packet module"""
