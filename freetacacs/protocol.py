@@ -17,9 +17,14 @@ from freetacacs import flags
 from freetacacs.misc import create_log_dict
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
+# Authentication
 from freetacacs.authentication import AuthenReplyFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
+# Authorisation
+from freetacacs.authorisation import AuthorReplyFields
+from freetacacs.authorisation import TACACSPlusAuthorRequest as AuthorRequestPacket
+from freetacacs.authorisation import TACACSPlusAuthorReply as AuthorReplyPacket
 
 def catch_error(err):
     print(err)
@@ -372,11 +377,11 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(decode_packet)
 
 
-    def _authorisation(self, rx_header, raw_body):
+    def _authorisation(self, rx_header_fields, raw_body):
         """Process authorisation packets
 
         Args:
-          rx_header(dict): header fields
+          rx_header_fields(obj): dataclass containing header fields
           raw_body(byte): packet body
         Exceptions:
           None
@@ -384,12 +389,49 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # TAC_PLUS_AUTHOR_STATUS_ERROR
-        # Determine the type of packet to process
-        if rx_header.sequence_no == 1:
-            print('author request')
-        else:
-            print('author response')
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def decode_packet(value):
+
+            pkt = AuthorRequestPacket(rx_header_fields, raw_body, secret=value)
+            rx_body_fields = pkt.decode
+
+            # Create a request debug logging message
+            kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+            kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                                str(rx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_AUTHOR,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AuthorReplyFields(status=flags.TAC_PLUS_AUTHOR_STATUS_ERROR,
+                                               arg_cnt=0,
+                                               server_msg='Functionality NOT implemented',
+                                               data='Functionality NOT implemented',
+                                               args=[],
+                                               )
+
+            reply = AuthorReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+        d.addCallback(decode_packet)
 
 
     def _accounting(self, rx_header, raw_body):
