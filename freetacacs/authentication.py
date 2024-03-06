@@ -8,52 +8,35 @@ Classes:
 Functions:
     None
 """
+
 import struct
-import logging
 from dataclasses import dataclass
+from twisted.logger import Logger
 import six
 
 # Local imports
 from freetacacs import flags
 from freetacacs.packet import TACACSPlusPacket as Packet
+from freetacacs.packet import RequestFields, ReplyFields
 
-log = logging.getLogger(__name__)
+# Setup the logger
+log = Logger()
 
 
 @dataclass
-class AuthenStartFields:
+class AuthenStartFields(RequestFields):
     """Defines Authentication Start packet fields"""
-    action: int
-    priv_lvl: int = 0x00
-    authen_type: int = 0x00
-    authen_service: int = 0x00
-    user: str = ''
-    port: str = ''
-    remote_address: str = ''
+
+    action: int = 0x00
     data: str = ''
 
     # Validate the data
     def __post_init__(self):
+        # Extend our parent class __post_init__ method
+        super().__post_init__()
+
         if not isinstance(self.action, int):
             raise TypeError('Action should be of type int')
-
-        if not isinstance(self.priv_lvl, int):
-            raise TypeError('Priviledge Level should be of type int')
-
-        if not isinstance(self.authen_type, int):
-            raise TypeError('Authentication Type should be of type int')
-
-        if not isinstance(self.authen_service, int):
-            raise TypeError('Authentication Service should be of type int')
-
-        if not isinstance(self.user, str):
-            raise TypeError('User should be of type string')
-
-        if not isinstance(self.port, str):
-            raise TypeError('Port should be of type string')
-
-        if not isinstance(self.remote_address, str):
-            raise TypeError('Remote Address should be of type string')
 
         if not isinstance(self.data, str):
             raise TypeError('Data should be of type string')
@@ -105,8 +88,7 @@ class TACACSPlusAuthenStart(Packet):
     """Class to handle encoding/decoding of TACACS+ Authentication START packet bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthenStartFields(action=0x01),
-                 secret=None):
+                 fields=AuthenStartFields(), secret=None):
         """Initialise a TACACS+ Authentication Start packet body
 
         Initialise a TACACS+ Authentication START packet. This can be done by
@@ -291,27 +273,18 @@ class TACACSPlusAuthenStart(Packet):
 
 
 @dataclass
-class AuthenReplyFields:
+class AuthenReplyFields(ReplyFields):
     """Defines Authentication Reply fields required to create a Reply packet"""
 
-    status: int
-    flags: int
-    server_msg: str = ''
-    data: str = ''
+    flags: int = 0x00
 
     # Validate the data
     def __post_init__(self):
-        if not isinstance(self.status, int):
-            raise TypeError('Status should be of type int')
+        # Extend our parent class __post_init__ method
+        super().__post_init__()
 
         if not isinstance(self.flags, int):
             raise TypeError('Flags should be of type int')
-
-        if not isinstance(self.server_msg, str):
-            raise TypeError('Server Message should be of type string')
-
-        if not isinstance(self.data, str):
-            raise TypeError('Data should be of type string')
 
 
     def __str__(self):
@@ -347,8 +320,7 @@ class TACACSPlusAuthenReply(Packet):
     bodies"""
 
     def __init__(self, header, body=six.b(''),
-                 fields=AuthenReplyFields(status=0x00, flags=0x00),
-                 secret=None):
+                 fields=AuthenReplyFields(), secret=None):
         """Initialise a TACAS+ Authentication REPLY packet body
 
         Initialise a TACACS+ Authentication REPLY packet. This can be done by

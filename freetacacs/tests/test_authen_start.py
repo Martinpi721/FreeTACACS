@@ -49,10 +49,9 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       priv_lvl='invalid')
+            fields = AuthenStartFields(priv_lvl='invalid')
 
-        assert str(e.value) == 'Priviledge Level should be of type int'
+        assert str(e.value) == 'Privilege Level should be of type int'
 
 
     def test_invalid_authentication_type(self):
@@ -65,8 +64,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       authen_type='invalid')
+            fields = AuthenStartFields(authen_type='invalid')
 
         assert str(e.value) == 'Authentication Type should be of type int'
 
@@ -81,8 +79,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       authen_service='invalid')
+            fields = AuthenStartFields(authen_service='invalid')
 
         assert str(e.value) == 'Authentication Service should be of type int'
 
@@ -97,8 +94,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       user=1234)
+            fields = AuthenStartFields(user=1234)
 
         assert str(e.value) == 'User should be of type string'
 
@@ -113,8 +109,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       port=1234)
+            fields = AuthenStartFields(port=1234)
 
         assert str(e.value) == 'Port should be of type string'
 
@@ -129,8 +124,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       remote_address=1234)
+            fields = AuthenStartFields(remote_address=1234)
 
         assert str(e.value) == 'Remote Address should be of type string'
 
@@ -145,8 +139,7 @@ class TestAuthenStartFields:
                                      length=40))
 
         with pytest.raises(TypeError) as e:
-            fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
-                                       data=1234)
+            fields = AuthenStartFields(data=1234)
 
         assert str(e.value) == 'Data should be of type string'
 
@@ -196,22 +189,6 @@ class TestAuthenStartFields:
 
 class TestAuthenStart:
     """Test class for testing the Authentication Start class"""
-
-    def test_create_instance_without_body_nor_fields(self):
-        """Test we handle failure to pass either body for fields"""
-
-        # Configure the header
-        header = Header(HeaderFields(version=193,
-                                     packet_type=flags.TAC_PLUS_AUTHEN,
-                                     session_id=123456,
-                                     length=40))
-
-        with pytest.raises(TypeError) as e:
-            AuthenStartPacket(header, fields=AuthenStartFields(), secret='test')
-
-        assert str(e.value) == "__init__() missing 1 required positional" \
-                               " argument: 'action'"
-
 
     def test_create_instance_with_body(self):
         """Test we can create a instance of TACACSPlusAuthenStart class"""

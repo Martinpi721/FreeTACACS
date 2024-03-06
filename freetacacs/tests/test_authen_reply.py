@@ -22,7 +22,6 @@ from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
 class TestAuthenReplyFields:
     """Test class for testing the Authentication Reply Fields class"""
 
-
     def test_invalid_status(self):
         """Test we handle passing a invalid status field type"""
 
@@ -86,25 +85,6 @@ class TestAuthenReplyFields:
 
 class TestAuthenReply:
     """Test class for testing the Authentication Reply class"""
-
-
-    def test_create_instance_without_body_nor_fields(self):
-        """Test we handle failure to pass either body for fields"""
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
-        # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
-
-        with pytest.raises(TypeError) as e:
-            AuthenReplyPacket(header, fields=AuthenReplyFields(), secret='test')
-
-        assert str(e.value) == "__init__() missing 2 required positional" \
-                               " arguments: 'status' and 'flags'"
-
 
     def test_create_instance_with_body(self):
         """Test we can create an instance from TACACSPlusAuthenReply class"""
