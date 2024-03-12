@@ -28,7 +28,6 @@ from freetacacs.authorisation import TACACSPlusAuthorReply as AuthorReplyPacket
 class TestAuthorReplyFields(unittest.TestCase):
     """Test class for testing the Authorisation request Fields class"""
 
-
     def test_invalid_status(self):
         """Test we handle passing a invalid status field type"""
 
