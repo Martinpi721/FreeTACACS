@@ -189,6 +189,28 @@ class TACACSPlusAccountRequest(Packet):
         if len(self._body) > 0:
             return None
 
+        # If fields dict doesn't contain these keys then we are decoding a Request
+        # rather than building a Request packet
+        try:
+            self._flags = fields.flags
+            self._authen_method = fields.authen_method
+            self._priv_lvl = fields.priv_lvl
+            self._authen_type = fields.authen_type
+            self._authen_service = fields.authen_service
+            self._user = fields.user
+            self._user_len = len(self._user)
+            self._port = fields.port
+            self._port_len = len(self._port)
+            self._remote_address = fields.remote_address
+            self._rem_addr_len = len(self._remote_address)
+            self._args = fields.args
+            self._arg_cnt = len(self._args)
+
+            for arg in self._args:
+                self._args_len.append(len(arg))
+        except TypeError:
+            raise
+
 
     @property
     def decode(self):
