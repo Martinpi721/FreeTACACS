@@ -86,7 +86,7 @@ class AcctRequestFields(RequestFields):
 
         # Convert authentication type flag codes back to human readable
         # strings
-        result = filter(lambda item: item[1] == self.authen_method,
+        result = filter(lambda item: item[1] == self.authen_type,
                                      flags.TAC_PLUS_AUTHEN_TYPES.items())
         authen_type = list(result)[0][0]
 
