@@ -424,3 +424,58 @@ class TACACSPlusAuthenReply(Packet):
                  f' data: {self._data}'
 
         return packet
+
+
+@dataclass
+class AuthenContinueFields():
+    """Defines Authentication Continue fields required to create a Continue packet"""
+
+    flags: int = 0x01
+    user_msg: str = ''
+    data: str = ''
+
+
+    # Validate the data
+    def __post_init__(self):
+        """Validate the authentication continue fields
+
+        Args:
+          None
+        Exceptions:
+          TypeError
+        Returns:
+          None
+        """
+
+        if not isinstance(self.flags, int):
+            raise TypeError('Flags should be of type int')
+
+        if not isinstance(self.user_msg, str):
+            raise TypeError('User Message should be of type string')
+
+        if not isinstance(self.data, str):
+            raise TypeError('Data should be of type string')
+
+
+    def __str__(self):
+        """String representation of the auth continue fields
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          fields(str): containing the auth continue fields
+        """
+
+        # Convert status codes back to human readable strings
+        if self.flags == 0x01:
+            reply_flags = 'TAC_PLUS_CONTINUE_FLAG_ABORT'
+        else:
+            reply_flags = self.flags
+
+        # Build the string representation
+        fields = f'flags: {reply_flags},' \
+                 f' user_msg: {self.user_msg}, data: {self.data}'
+
+        return fields

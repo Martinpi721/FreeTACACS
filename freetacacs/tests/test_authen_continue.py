@@ -61,3 +61,38 @@ class TestAuthenContinueFields:
         assert str(fields) == 'flags: TAC_PLUS_CONTINUE_FLAG_ABORT, user_msg: , data: '
 
 
+    def test_default_authentication_continue_fields_dict(self):
+        """Test we can get the default dict representation of authentication continue fields"""
+
+        fields = AuthenContinueFields()
+
+        assert vars(fields) == {
+                                 'flags'    : 0x01,
+                                 'user_msg' : '',
+                                 'data'     : '',
+                                }
+
+
+    def test_authentication_continue_fields_string(self):
+        """Test we can get the string representation of authentication continue fields"""
+
+        fields = AuthenContinueFields(flags=0x00,
+                                      user_msg='Functionality NOT implemented',
+                                      data='Functionality NOT implemented')
+
+        assert str(fields) == 'flags: 0, user_msg: Functionality NOT implemented,' \
+                              ' data: Functionality NOT implemented'
+
+
+    def test_accounting_reply_fields_dict(self):
+        """Test we can get the default dict representation of authentication continue fields"""
+
+        fields = AuthenContinueFields(flags=0x00,
+                                      user_msg='Functionality NOT implemented',
+                                      data='Functionality NOT implemented')
+
+        assert vars(fields) == {
+                                 'flags'    : 0,
+                                 'user_msg' : 'Functionality NOT implemented',
+                                 'data'     : 'Functionality NOT implemented',
+                                }
