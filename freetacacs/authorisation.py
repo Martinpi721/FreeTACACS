@@ -200,6 +200,49 @@ class TACACSPlusAuthorRequest(Packet):
         except TypeError:
             raise
 
+        # Build packet structure
+        try:
+            # B = unsigned char
+            self._body = struct.pack('BBBB', self._authen_method, self._priv_lvl,
+                                      self._authen_type, self._authen_service)
+
+            # B = unsigned char
+            self._body += struct.pack('BBBB', self._user_len, self._port_len,
+                                       self._rem_addr_len, self._arg_cnt)
+
+            # Pack the argument lengths
+            for arg_len in self._args_len:
+                self._body += struct.pack('B', arg_len)
+
+            # Byte encode
+            user = six.b(self._user)
+            port = six.b(self._port)
+            remote_address = six.b(self._remote_address)
+
+            # s = char[]
+            for value in (user, port, remote_address):
+                self._body += struct.pack(f'{len(value)}s', value)
+
+            # Byte encode and pack the arguments
+            # s = char[]
+            for arg in self._args:
+                value = six.b(arg)
+                self._body += struct.pack(f'{len(value)}s', value)
+
+        except struct.error as e:
+            raise ValueError('Unable to encode AuthorReply packet. Required' \
+                             ' arguments status, arg_cnt must be intergers.' \
+                             ) from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AuthorReply packet. Required' \
+                             ' arguments server_msg and data' \
+                             ' must be strings. args must be a list of strings' \
+                             ) from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
+        return None
 
     @property
     def decode(self):

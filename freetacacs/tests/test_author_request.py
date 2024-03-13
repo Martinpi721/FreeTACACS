@@ -294,6 +294,7 @@ class TestAuthorRequest(unittest.TestCase):
                            ' user_len: 6, port_len: 11, rem_addr_len: 13,' \
                            ' arg_cnt: 1, arg_1_len: 14, user: jsmith, port: python_tty0,' \
                            ' rem_addr: python_device, arg_1: service=system'
+        assert bytes(pkt) == b'\xc0\x02\x01\x00\x9c7<$\x00\x00\x005\x85\xad\xf7\xce\xcf.\xe4\x90\xa76\xa5$5q\xddY\xaa\xd5\xe5\x8b\x81\xcc\xdc\xd8W\x0f\x84\xf9\xd9\xba\xe8g\x90\x9c\xd7(2\xe6|\xbdL_,z\x1fc\xb3l|\xb5$V\xaf'
 
 
     def test_incorrect_session_id(self):
