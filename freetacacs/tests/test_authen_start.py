@@ -257,6 +257,7 @@ class TestAuthenStart:
                            ' user_len: 6, port_len: 11, rem_addr_len: 13,' \
                            ' data_len: 10, user: jsmith, port: python_tty0,' \
                            ' rem_addr: python_device, data: top_secret'
+        assert bytes(pkt) == b'\xc1\x01\x01\x00\x9c7<$\x00\x00\x000\xa3\x0c\xe1\xb1\x95\xf4f\x1eS\xad\xf3.~+\xaf%/`\xdd\xf7T\xafY\xd5\x05#T\xc8\x13\x8c\x84+`\xca\x8eP\x01Tv|!jOv\xdbZ\xf8\xa8'
 
 
     def test_incorrect_session_id(self):

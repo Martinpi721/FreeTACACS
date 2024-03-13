@@ -127,3 +127,4 @@ class TestAuthenReply:
         assert isinstance(pkt, AuthenReplyPacket)
         assert str(pkt) == 'status: 0, flags: 0, server_msg_len: 4,' \
                            ' data_len: 4, server_msg: test, data: test'
+        assert bytes(pkt) == b'\xc1\x01\x01\x00\x9c7<$\x00\x00\x00\x0e\xa2\x0c\xe3\xb4\x93\xfb\x1fqJ\xaa\xea"y7'
