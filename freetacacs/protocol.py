@@ -95,9 +95,9 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.transport.loseConnection()
             return
 
-#        if rx_header.sequence_no > 255:
-#            self.transport.loseConnection()
-#            return
+        if rx_header_fields.sequence_no > 255:
+            self.transport.loseConnection()
+            return
 
         # Create a request debug logging message
         kwargs = create_log_dict(rx_header_fields, rx_body_fields)
@@ -342,18 +342,17 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(send_response)
 
 
-    def _authentication(self, rx_header, raw_body):
+    def _authentication(self, rx_header_fields, raw_body):
         """Process authentication packets
 
         Args:
-          rx_header(dict): header fields
+          rx_header_fields(obj): dataclass containing header fields
           raw_body(byte): packet body
         Exceptions:
           None
         Returns:
           None
         """
-
 
         d = self.factory.get_shared_secret(self._nas_ip)
         d.addErrback(catch_error)
@@ -362,12 +361,12 @@ class TACACSPlusProtocol(protocol.Protocol):
 
             # Determine the type of packet to process
             # AuthenSTART
-            if rx_header.sequence_no == 1:
-                pkt = AuthenStartPacket(rx_header, raw_body, secret=value)
+            if rx_header_fields.sequence_no == 1:
+                pkt = AuthenStartPacket(rx_header_fields, body=raw_body, secret=value)
                 rx_body_fields = pkt.decode
 
                 # Use function mapper dict to decide how we handle the packet
-                self._auth_type_mapper[rx_body_fields.authen_type](rx_header,
+                self._auth_type_mapper[rx_body_fields.authen_type](rx_header_fields,
                                                                    rx_body_fields)
 
             # AuthenCONTINUE
@@ -394,7 +393,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
         def decode_packet(value):
 
-            pkt = AuthorRequestPacket(rx_header_fields, raw_body, secret=value)
+            pkt = AuthorRequestPacket(rx_header_fields, body=raw_body, secret=value)
             rx_body_fields = pkt.decode
 
             # Create a request debug logging message
@@ -416,8 +415,7 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                arg_cnt=0,
                                                server_msg='Functionality NOT implemented',
                                                data='Functionality NOT implemented',
-                                               args=[],
-                                               )
+                                               args=[])
 
             reply = AuthorReplyPacket(tx_header, fields=tx_body_fields, secret=value)
 
@@ -434,11 +432,11 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(decode_packet)
 
 
-    def _accounting(self, rx_header, raw_body):
+    def _accounting(self, rx_header_fields, raw_body):
         """Process accounting packets
 
         Args:
-          rx_header(dict): header fields
+          rx_header_fields(obj): dataclass containing header fields
           raw_body(byte): packet body
         Exceptions:
           None
