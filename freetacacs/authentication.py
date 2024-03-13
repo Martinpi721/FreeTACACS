@@ -479,3 +479,152 @@ class AuthenContinueFields():
                  f' user_msg: {self.user_msg}, data: {self.data}'
 
         return fields
+
+
+class TACACSPlusAuthenContinue(Packet):
+    """Class to handle encoding/decoding of TACACS+ Authentication CONTINUE packet
+    bodies"""
+
+    def __init__(self, header, body=six.b(''),
+                 fields=AuthenContinueFields(), secret=None):
+        """Initialise a TACAS+ Authentication CONTINUE packet body
+
+        Initialise a TACACS+ Authentication CONTINUE packet. This can be done by
+        either passing a byte body(when decoding) or passing values in a fields
+        dict(when creating).
+
+        Fields dict must contain the following keys: flags, user_msg
+        and data. See RFC8907 for details on contents of each.
+
+        Args:
+          header(obj): instance of a TACACSPlusHeader class
+          body(bytes): byte encoded TACACS+ packet body
+          fields(dataclass): fields used to create packet body
+          secret(str): client/server shared secret
+        Exceptions:
+          TypeError
+          ValueError
+        Returns:
+          None
+        """
+
+        # 1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8
+        #
+        # +----------------+----------------+----------------+----------------+
+        # |           user_msg len          |             data len            |
+        # +----------------+----------------+----------------+----------------+
+        # |      flags     |            user_msg ...                          |
+        # +----------------+----------------+----------------+----------------+
+        # |              data ...                                             |
+        # +----------------+----------------+----------------+----------------+
+
+        # Extend our parent class __init__ method
+        super().__init__(header, body, secret)
+
+        # Initialise the packet body fields
+        self._flags = None
+        self._user_msg_len = None
+        self._user_msg = None
+        self._data_len = None
+        self._data = None
+
+        # If body is not empty nothing more is required from __init__
+        if len(self._body) > 0:
+            return None
+
+        # If fields dict doesn't contain these keys then we are decoding a CONTINUE
+        # rather than building a CONTINUE packet
+        try:
+            self._flags = fields.flags
+            self._user_msg = fields.user_msg
+            self._user_msg_len = len(self._user_msg)
+            self._data = fields.data
+            self._data_len = len(self._data)
+        except TypeError:
+            raise
+
+        # Build packet structure
+        try:
+            # !H = network-order (big-endian) unsigned short
+            self._body = struct.pack('!HH', self._user_msg_len, self._data_len)
+
+            # B = unsigned char
+            self._body += struct.pack('B', self._flags)
+
+            # Byte encode
+            user_msg = six.b(self._user_msg)
+            data = six.b(self._data)
+
+            # s = char[]
+            for value in (user_msg, data):
+                self._body += struct.pack(f'{len(value)}s', value)
+        except struct.error as e:
+            raise ValueError('Unable to encode AuthenContinue packet. Required' \
+                             ' arguments status and flags must be integers') from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AuthenContinue packet. Required' \
+                             ' arguments server_msg and data must be strings') from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
+        return None
+
+
+    @property
+    def decode(self):
+        """Decode a TACAS+ Authentication continue packet body
+
+        Args:
+          None
+        Exceptions:
+          ValueError
+        Returns:
+          fields(obj): instance of AuthenContinueFields dataclass
+        """
+
+        # Deobfuscate the packet if required
+        raw = six.BytesIO(self._body)
+        if self._secret is not None:
+            body = six.BytesIO(self.deobfuscate)
+        else:
+            body = raw
+
+        # Decode the packet body
+        try:
+            self._user_msg_len, self._data_len = struct.unpack('!HH', body.read(4))
+            self._flags = struct.unpack('B', body.read(1))[0]
+
+            self._user_msg = body.read(self._user_msg_len).decode('UTF-8')
+            self._data = body.read(self._data_len).decode('UTF-8')
+        except ValueError as e:
+            raise ValueError('Unable to decode AuthenContinue packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
+
+        fields = AuthenContinueFields(flags=self._flags,
+                                      user_msg=self._user_msg,
+                                      data=self._data)
+
+        return fields
+
+
+    def __str__(self):
+        """String representation of the TACACS+ packet
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(str): containing the TACACS+ packet body
+        """
+
+        # Build the string representation
+        packet = f'user_msg_len: {self._user_msg_len},' \
+                 f' data_len: {self._data_len},' \
+                 f' flags: {self._flags},' \
+                 f' user_msg: {self._user_msg},' \
+                 f' data: {self._data}'
+
+        return packet
