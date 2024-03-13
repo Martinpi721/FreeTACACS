@@ -123,11 +123,12 @@ class TACACSPlusAccountRequest(Packet):
         either passing a byte body(when decoding) or passing values in a fields
         dict(when creating).
 
-        Fields dict must contain the following keys: flags, authen_method, priv_lvl,
-        authen_type, authen_service, user, port, remote_address, arg_cnt. A
-        args list should be provided containing the arg N authorisation arguments.
-        At the very least this list MUST always contain a service argument.
-        See RFC8907 for details on contents of each field and authorisation
+        Fields dataclass must contain the following attributes: flags,
+        authen_method, priv_lvl, authen_type, authen_service, user, port,
+        remote_address, arg_cnt. A args list should be provided containing the
+        arg N authorisation arguments. At the very least this list MUST always
+        contain a service argument. See RFC8907 for details on contents of
+        each field and authorisation
         arguments.
 
         Args:
@@ -189,7 +190,7 @@ class TACACSPlusAccountRequest(Packet):
         if len(self._body) > 0:
             return None
 
-        # If fields dict doesn't contain these keys then we are decoding a Request
+        # If fields dataclass doesn't contain these keys then we are decoding a Request
         # rather than building a Request packet
         try:
             self._flags = fields.flags
