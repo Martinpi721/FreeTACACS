@@ -212,6 +212,45 @@ class TACACSPlusAccountRequest(Packet):
         except TypeError:
             raise
 
+        # Build packet structure
+        try:
+            # B = unsigned char
+            self._body = struct.pack('BBBB', self._flags, self._authen_method,
+                                     self._priv_lvl, self._authen_type)
+
+            # B = unsigned char
+            self._body += struct.pack('BBBBB', self._authen_service, self._user_len,
+                                      self._port_len, self._rem_addr_len, self._arg_cnt)
+
+            # Pack the argument lengths
+            for arg_len in self._args_len:
+                self._body += struct.pack('B', arg_len)
+
+            # Byte encode
+            user = six.b(self._user)
+            port = six.b(self._port)
+            remote_address = six.b(self._remote_address)
+
+            # s = char[]
+            for value in (user, port, remote_address):
+                self._body += struct.pack(f'{len(value)}s', value)
+
+            # Byte encode and pack the arguments
+            # s = char[]
+            for arg in self._args:
+                value = six.b(arg)
+                self._body += struct.pack(f'{len(value)}s', value)
+        except struct.error as e:
+            raise ValueError('Unable to encode AcctRequest packet. Required' \
+                             ' status must an interger.') from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AcctRequest packet. Required' \
+                             ' arguments server_msg and data' \
+                             ' must be strings.') from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
 
     @property
     def decode(self):
@@ -315,8 +354,6 @@ class TACACSPlusAccountRequest(Packet):
         return packet
 
 
-
-
 @dataclass
 class AcctReplyFields(ReplyFields):
     """Defines Accounting Reply packet fields."""
@@ -349,6 +386,28 @@ class AcctReplyFields(ReplyFields):
 class TACACSPlusAccountReply(Packet):
     """Class to handle encoding/decoding of TACACS+ Accounting REPLY packet bodies"""
 
+    def __init__(self, header, body=six.b(''),
+                 fields=AcctReplyFields(), secret=None):
+        """Initialise a TACACS+ Accounting REPLY packet body
+
+        Initialise a TACACS+ Aaccounting REPLY packet. This can be done by
+        either passing a byte body(when decoding) or passing values in a fields
+        dict(when creating).
+
+        Fields dataclass must contain the following attributes: server_msg, status
+        and data
+
+        Args:
+          header(obj): instance of a TACACSPlusHeader class
+          body(bytes): byte encoded TACACS+ packet body
+          fields(dataclass): fields used to create packet body
+          secret(str): client/server shared secret
+        Exceptions:
+          TypeError
+          ValueError
+        Returns:
+          None
+        """
 
         #  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8  1 2 3 4 5 6 7 8
         #
@@ -360,3 +419,116 @@ class TACACSPlusAccountReply(Packet):
         # |     data ...                                                      |
         # +----------------+----------------+----------------+----------------+
 
+        # Extend our parent class __init__ method
+        super().__init__(header, body, secret)
+
+        # Initialise the packet body fields
+        self._server_msg_len = None
+        self._data_len = None
+        self._status = None
+        self._server_msg = None
+        self._data = None
+
+        # If body is not empty nothing more is required from __init__
+        if len(self._body) > 0:
+            return None
+
+        # If fields dataclass doesn't contain these keys then we are decoding a Reply
+        # rather than building a Reply packet
+        try:
+            self._status = fields.status
+            self._server_msg = fields.server_msg
+            self._server_msg_len = len(self._server_msg)
+            self._data = fields.data
+            self._data_len = len(self._data)
+        except TypeError:
+            raise
+
+        # Build packet structure
+        try:
+            # !H = network-order (big-endian) unsigned short
+            self._body = struct.pack('!HH', self._server_msg_len, self._data_len)
+
+            # B = unsigned char
+            self._body += struct.pack('B', self._status)
+
+            # Byte encode
+            server_msg = six.b(self._server_msg)
+            data = six.b(self._data)
+
+            # s = char[]
+            for value in (server_msg, data):
+                self._body += struct.pack(f'{len(value)}s', value)
+
+        except struct.error as e:
+            raise ValueError('Unable to encode AcctReply packet. Required' \
+                             ' status must an interger.') from e
+        except TypeError as e:
+            raise ValueError('Unable to encode AcctReply packet. Required' \
+                             ' arguments server_msg and data' \
+                             ' must be strings.') from e
+
+        # Set the packet body length in the header
+        self._header.length = len(self._body)
+
+        return None
+
+
+    @property
+    def decode(self):
+        """Decode a TACAS+ Accounting reply packet body
+
+        Args:
+          None
+        Exceptions:
+          ValueError
+        Returns:
+          fields(obj): instance of AcctReplyFields dataclass
+        """
+
+        # Deobfuscate the packet if required
+        raw = six.BytesIO(self._body)
+        if self._secret is not None:
+            body = six.BytesIO(self.deobfuscate)
+        else:
+            body = raw
+
+        # Decode the packet body
+        try:
+            # !H = network-order (big-endian) unsigned short
+            self._server_msg_len, self._data_len = struct.unpack('!HH', body.read(4))
+
+            # B = unsigned char
+            self._status = struct.unpack('B', body.read(1))[0]
+
+            # Byte decode
+            self._server_msg = body.read(self._server_msg_len).decode('UTF-8')
+            self._data = body.read(self._data_len).decode('UTF-8')
+        except (struct.error, ValueError) as e:
+            raise ValueError('Unable to decode AcctReply packet. TACACS+' \
+                             ' client/server shared key probably does not' \
+                             ' match') from e
+
+        fields = AcctReplyFields(status=self._status, server_msg=self._server_msg,
+                                 data=self._data)
+
+        return fields
+
+
+    def __str__(self):
+        """String representation of the TACACS+ packet
+
+        Args:
+          None
+        Exceptions:
+          None
+        Returns:
+          packet(str): containing the TACACS+ packet body
+        """
+
+        # Build the string representation
+        packet = f'server_msg_len: {self._server_msg_len},' \
+                 f' data_len: {self._data_len}, status: {self._status},' \
+                 f' server_msg: {self._server_msg}, data: {self._data}'
+
+        return packet
