@@ -25,6 +25,10 @@ from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
 from freetacacs.authorisation import AuthorReplyFields
 from freetacacs.authorisation import TACACSPlusAuthorRequest as AuthorRequestPacket
 from freetacacs.authorisation import TACACSPlusAuthorReply as AuthorReplyPacket
+# Accounting
+from freetacacs.accounting import AcctReplyFields
+from freetacacs.accounting import TACACSPlusAccountRequest as AcctRequestPacket
+from freetacacs.accounting import TACACSPlusAccountReply as AcctReplyPacket
 
 def catch_error(err):
     print(err)
@@ -444,12 +448,46 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # TAC_PLUS_ACCT_STATUS_ERROR
-        # Determine the type of packet to process
-        if rx_header.sequence_no == 1:
-            print('acct request')
-        else:
-            print('acct response')
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
+
+        def decode_packet(value):
+
+            pkt = AcctRequestPacket(rx_header_fields, body=raw_body, secret=value)
+            rx_body_fields = pkt.decode
+
+            # Create a request debug logging message
+            kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+            kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                                str(rx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+            # Build reply packet header
+            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+                                            packet_type=flags.TAC_PLUS_ACCT,
+                                            session_id=rx_header_fields.session_id,
+                                            sequence_no=rx_header_fields.sequence_no + 1)
+
+            tx_header = Header(tx_header_fields)
+
+            # Build the reply packet body
+            tx_body_fields = AcctReplyFields(status=flags.TAC_PLUS_ACCT_STATUS_ERROR,
+                                               server_msg='Functionality NOT implemented',
+                                               data='Functionality NOT implemented')
+
+            reply = AcctReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+
+            # Create a response debug logging message
+            tx_header_fields.length = reply.length
+            kwargs = create_log_dict(tx_header_fields, tx_body_fields)
+            kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
+                                                                str(tx_body_fields)]))
+            self.log.debug(kwargs['text'], **kwargs)
+
+            # Write your packet to the transport layer
+            self.transport.write(bytes(reply))
+
+        d.addCallback(decode_packet)
 
 
     def connectionMade(self):

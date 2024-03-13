@@ -23,9 +23,18 @@ from freetacacs.service import TACACSPlusService
 from freetacacs.protocol import TACACSPlusProtocol
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
+# Authentication
 from freetacacs.authentication import AuthenStartFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
+# Authorisation
+from freetacacs.authorisation import AuthorRequestFields
+from freetacacs.authorisation import TACACSPlusAuthorRequest as AuthorRequestPacket
+from freetacacs.authorisation import TACACSPlusAuthorReply as AuthorReplyPacket
+# Accounting
+from freetacacs.accounting import AcctRequestFields
+from freetacacs.accounting import TACACSPlusAccountRequest as AcctRequestPacket
+from freetacacs.accounting import TACACSPlusAccountReply as AcctReplyPacket
 
 
 class TestTACACSPlusProtocol(unittest.TestCase):
@@ -357,3 +366,150 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['flags'], 0)
         self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
         self.assertEqual(event['data'], '')
+
+
+    @defer.inlineCallbacks
+    def test_selection_of_authorisation_flow(self):
+        """Test that we can route authorisation packets correctly"""
+
+        # Build a AuthorRequest packet
+        tx_header_fields = HeaderFields(version=192,
+                                        packet_type=flags.TAC_PLUS_AUTHOR,
+                                        session_id=123456,
+                                        sequence_no=1)
+
+        tx_header = Header(tx_header_fields)
+
+        # Build the reply packet body
+        tx_body_fields = AuthorRequestFields(authen_method=flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS,
+                                             priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
+                                             authen_type=flags.TAC_PLUS_AUTHEN_TYPE_NOT_SET,
+                                             authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                             user='jsmith',
+                                             port='python_tty0',
+                                             remote_address='python_device',
+                                             args=['service=system'])
+
+        request = AuthorRequestPacket(tx_header, fields=tx_body_fields,
+                                      secret='shared_secret')
+
+        # Mock the necessary functions
+        with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
+            mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
+
+            # Set the factory for the protocol
+            self.protocol.factory = self.factory
+
+            # Mock a dummy reply packet for self.transport.write
+            # Ensures that the test tidies up correctly
+            with patch.object(AuthorReplyPacket, '__bytes__') as mock_reply:
+                mock_reply.return_value = bytes(b'dummy packet')
+
+                with capturedLogs() as events:
+                    yield self.protocol.dataReceived(bytes(request))
+
+        event = events[0]
+        self.assertTrue(len(events) == 2)
+
+        # Request packet header data
+        self.assertEqual(event['version'], 192)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHOR)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 1)
+        self.assertEqual(event['length'], 53)
+
+        # Request packet body data
+        self.assertEqual(event['authen_method'], flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS)
+        self.assertEqual(event['priv_lvl'], flags.TAC_PLUS_PRIV_LVL_MIN)
+        self.assertEqual(event['authen_type'], flags.TAC_PLUS_AUTHEN_TYPE_NOT_SET)
+        self.assertEqual(event['user'], 'jsmith')
+        self.assertEqual(event['port'], 'python_tty0')
+        self.assertEqual(event['remote_address'], 'python_device')
+        self.assertEqual(event['args'], ['service=system'])
+
+        event = events[1]
+        # Reply packet header data
+        self.assertEqual(event['version'], 192)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHOR)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 2)
+        self.assertEqual(event['length'], 64)
+
+        # Reply packet body data
+        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHOR_STATUS_ERROR)
+        self.assertEqual(event['flags'], 0)
+        self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
+        self.assertEqual(event['data'], 'Functionality NOT implemented')
+
+
+    @defer.inlineCallbacks
+    def test_selection_of_accounting_flow(self):
+        """Test that we can route accounting packets correctly"""
+
+        # Build a AuthorRequest packet
+        tx_header_fields = HeaderFields(version=192,
+                                        packet_type=flags.TAC_PLUS_ACCT,
+                                        session_id=123456,
+                                        sequence_no=1)
+
+        tx_header = Header(tx_header_fields)
+
+        # Build the reply packet body
+        tx_body_fields = AcctRequestFields(authen_method=flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS,
+                                           priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
+                                           authen_type=flags.TAC_PLUS_AUTHEN_TYPE_NOT_SET,
+                                           authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                           user='jsmith',
+                                           port='python_tty0',
+                                           remote_address='python_device',
+                                           args=['service=system'])
+
+        request = AcctRequestPacket(tx_header, fields=tx_body_fields, secret='shared_secret')
+
+        # Mock the necessary functions
+        with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
+            mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
+
+            # Set the factory for the protocol
+            self.protocol.factory = self.factory
+
+            # Mock a dummy reply packet for self.transport.write
+            # Ensures that the test tidies up correctly
+            with patch.object(AcctReplyPacket, '__bytes__') as mock_reply:
+                mock_reply.return_value = bytes(b'dummy packet')
+
+                with capturedLogs() as events:
+                    yield self.protocol.dataReceived(bytes(request))
+
+        event = events[0]
+        self.assertTrue(len(events) == 2)
+
+        # Request packet header data
+        self.assertEqual(event['version'], 192)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_ACCT)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 1)
+        self.assertEqual(event['length'], 54)
+
+        # Request packet body data
+        self.assertEqual(event['authen_method'], flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS)
+        self.assertEqual(event['priv_lvl'], flags.TAC_PLUS_PRIV_LVL_MIN)
+        self.assertEqual(event['authen_type'], flags.TAC_PLUS_AUTHEN_TYPE_NOT_SET)
+        self.assertEqual(event['user'], 'jsmith')
+        self.assertEqual(event['port'], 'python_tty0')
+        self.assertEqual(event['remote_address'], 'python_device')
+        self.assertEqual(event['args'], ['service=system'])
+
+        event = events[1]
+        # Reply packet header data
+        self.assertEqual(event['version'], 192)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_ACCT)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 2)
+        self.assertEqual(event['length'], 63)
+
+        # Reply packet body data
+        self.assertEqual(event['status'], flags.TAC_PLUS_ACCT_STATUS_ERROR)
+        self.assertEqual(event['flags'], 0)
+        self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
+        self.assertEqual(event['data'], 'Functionality NOT implemented')
