@@ -153,8 +153,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build a AuthStart packet with PAP auth
         tx_header_fields = HeaderFields(version=193,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
-                                        session_id=123456,
-                                        sequence_no=1)
+                                        session_id=123456)
 
         tx_header = Header(tx_header_fields)
 
@@ -227,8 +226,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build a AuthStart packet with PAP auth
         tx_header_fields = HeaderFields(version=193,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
-                                        session_id=123456,
-                                        sequence_no=1)
+                                        session_id=123456)
 
         tx_header = Header(tx_header_fields)
 
@@ -301,8 +299,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build a AuthStart packet with PAP auth
         tx_header_fields = HeaderFields(version=193,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
-                                        session_id=123456,
-                                        sequence_no=1)
+                                        session_id=123456)
 
         tx_header = Header(tx_header_fields)
 
@@ -375,8 +372,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build a AuthorRequest packet
         tx_header_fields = HeaderFields(version=192,
                                         packet_type=flags.TAC_PLUS_AUTHOR,
-                                        session_id=123456,
-                                        sequence_no=1)
+                                        session_id=123456)
 
         tx_header = Header(tx_header_fields)
 
@@ -449,8 +445,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         # Build a AuthorRequest packet
         tx_header_fields = HeaderFields(version=192,
                                         packet_type=flags.TAC_PLUS_ACCT,
-                                        session_id=123456,
-                                        sequence_no=1)
+                                        session_id=123456)
 
         tx_header = Header(tx_header_fields)
 
