@@ -8,6 +8,9 @@ Functions:
     None
 """
 
+# Only required to skip test
+import pytest
+
 from twisted.internet import protocol, defer
 from twisted.trial import unittest
 from twisted.test import proto_helpers
@@ -24,9 +27,10 @@ from freetacacs.protocol import TACACSPlusProtocol
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
 # Authentication
-from freetacacs.authentication import AuthenStartFields
+from freetacacs.authentication import AuthenStartFields, AuthenContinueFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 from freetacacs.authentication import TACACSPlusAuthenReply as AuthenReplyPacket
+from freetacacs.authentication import TACACSPlusAuthenContinue as AuthenContPacket
 # Authorisation
 from freetacacs.authorisation import AuthorRequestFields
 from freetacacs.authorisation import TACACSPlusAuthorRequest as AuthorRequestPacket
@@ -508,3 +512,41 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['flags'], 0)
         self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
         self.assertEqual(event['data'], 'Functionality NOT implemented')
+
+
+    @pytest.mark.skip(reason="Not implemented")
+    @defer.inlineCallbacks
+    def test_selection_of_ascii_authentication_continue_flow(self):
+        """Test that we can route authentication continue packets correctly"""
+
+        # Build a AuthenContinue packet
+        tx_header_fields = HeaderFields(version=193,
+                                        packet_type=flags.TAC_PLUS_AUTHEN,
+                                        session_id=123456)
+
+        tx_header = Header(tx_header_fields, sequence_no=2)
+
+        # Build the continue packet body
+        tx_body_fields = AuthenContinueFields(flags=0x00,
+                                              user_msg='',
+                                              data='')
+
+        reply = AuthenContPacket(tx_header, fields=tx_body_fields, secret='shared_secret')
+
+        # Mock the necessary functions
+        with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
+            mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
+
+            # Set the factory for the protocol
+            self.protocol.factory = self.factory
+
+            # Mock a dummy reply packet for self.transport.write
+            # Ensures that the test tidies up correctly
+            with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
+                mock_reply.return_value = bytes(b'dummy packet')
+
+                with capturedLogs() as events:
+                    yield self.protocol.dataReceived(bytes(reply))
+
+        event = events[0]
+        self.assertTrue(len(events) == 2)
