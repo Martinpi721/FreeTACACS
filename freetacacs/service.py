@@ -109,7 +109,7 @@ class TACACSPlusService(service.Service):
 
 
     def valid_credentials(self, username, password):
-        """Lookup the client shared secret value from the clients ip address
+        """Validate a users credentials
 
         Args:
           username(str): containing user accessing client device
