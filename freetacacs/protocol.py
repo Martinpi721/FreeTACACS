@@ -80,12 +80,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         }
 
 
-    def _auth_ascii(self, rx_header_fields, rx_body_fields):
+    def _auth_ascii(self, rx_header_fields, rx_body_fields, shared_secret):
         """Process ascii authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
         Returns:
@@ -113,6 +114,17 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def send_response(value):
+            """Create a TACACS+ response packet and write it to the network transport
+
+            Args:
+              value(bool): user credentials are valid/invalid [True|False]
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            authenticated = value
 
             # Build reply packet header
             tx_header_fields = HeaderFields(version=rx_header_fields.version,
@@ -142,28 +154,31 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(send_response)
 
 
-    def _auth_pap(self, rx_header_fields, rx_body_fields):
+    def _auth_pap(self, rx_header_fields, rx_body_fields, shared_secret):
         """Process pap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
         Returns:
           None
         """
 
-        # Create a request debug logging message
-        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
-        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
-                                                            str(rx_body_fields)]))
-        self.log.debug(kwargs['text'], **kwargs)
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def send_response(value):
+            """Create a TACACS+ response packet and write it to the network transport
+
+            Args:
+              value(bool): user credentials are valid/invalid [True|False]
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            authenticated = value
 
             # Build reply packet header
             tx_header_fields = HeaderFields(version=rx_header_fields.version,
@@ -178,7 +193,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
                                                server_msg='Functionality NOT implemented')
 
-            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+            reply = AuthenReplyPacket(tx_header, fields=tx_body_fields,
+                                      secret=shared_secret)
 
             # Write your packet to the transport layer
             self.transport.write(bytes(reply))
@@ -190,15 +206,27 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        # Validate the users credentials via the deferred
+        d = self.factory.valid_credentials(rx_body_fields.user,
+                                           rx_body_fields.data)
+        d.addErrback(catch_error)
         d.addCallback(send_response)
 
 
-    def _auth_chap(self, rx_header_fields, rx_body_fields):
+    def _auth_chap(self, rx_header_fields, rx_body_fields, shared_secret):
         """Process chap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
         Returns:
@@ -215,6 +243,17 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def send_response(value):
+            """Create a TACACS+ response packet and write it to the network transport
+
+            Args:
+              value(bool): user credentials are valid/invalid [True|False]
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            authenticated = value
 
             # Build reply packet header
             tx_header_fields = HeaderFields(version=rx_header_fields.version,
@@ -244,12 +283,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(send_response)
 
 
-    def _auth_mschap(self, rx_header_fields, rx_body_fields):
+    def _auth_mschap(self, rx_header_fields, rx_body_fields, shared_secret):
         """Process mschap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
         Returns:
@@ -266,6 +306,17 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def send_response(value):
+            """Create a TACACS+ response packet and write it to the network transport
+
+            Args:
+              value(bool): user credentials are valid/invalid [True|False]
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            authenticated = value
 
             # Build reply packet header
             tx_header_fields = HeaderFields(version=rx_header_fields.version,
@@ -295,12 +346,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addCallback(send_response)
 
 
-    def _auth_mschapv2(self, rx_header_fields, rx_body_fields):
+    def _auth_mschapv2(self, rx_header_fields, rx_body_fields, shared_secret):
         """Process mschapv2 authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
         Returns:
@@ -317,6 +369,17 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def send_response(value):
+            """Create a TACACS+ response packet and write it to the network transport
+
+            Args:
+              value(bool): user credentials are valid/invalid [True|False]
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            authenticated = value
 
             # Build reply packet header
             tx_header_fields = HeaderFields(version=rx_header_fields.version,
@@ -358,25 +421,38 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def decode_packet(value):
+            """Process authentication packets
+
+            Args:
+              value(str): containing the TACACS+ shared secret
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            shared_secret = value
 
             # Determine the type of packet to process
             # AuthenSTART
             if rx_header_fields.sequence_no == 1:
-                pkt = AuthenStartPacket(rx_header_fields, body=raw_body, secret=value)
+                pkt = AuthenStartPacket(rx_header_fields, body=raw_body,
+                                        secret=shared_secret)
                 rx_body_fields = pkt.decode
 
                 # Use function mapper dict to decide how we handle the packet
                 self._auth_type_mapper[rx_body_fields.authen_type](rx_header_fields,
-                                                                   rx_body_fields)
+                                                                   rx_body_fields,
+                                                                   shared_secret)
 
             # AuthenCONTINUE
             else:
                 print('authen continue')
 
+
+        d = self.factory.get_shared_secret(self._nas_ip)
+        d.addErrback(catch_error)
         d.addCallback(decode_packet)
 
 
@@ -396,8 +472,20 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def decode_packet(value):
+            """Process authorisation packets
 
-            pkt = AuthorRequestPacket(rx_header_fields, body=raw_body, secret=value)
+            Args:
+              value(str): containing the TACACS+ shared secret
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            shared_secret = value
+
+            pkt = AuthorRequestPacket(rx_header_fields, body=raw_body,
+                                      secret=shared_secret)
             rx_body_fields = pkt.decode
 
             # Create a request debug logging message
@@ -421,7 +509,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                data='Functionality NOT implemented',
                                                args=[])
 
-            reply = AuthorReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+            reply = AuthorReplyPacket(tx_header, fields=tx_body_fields,
+                                      secret=shared_secret)
 
             # Write your packet to the transport layer
             self.transport.write(bytes(reply))
@@ -452,8 +541,20 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
         def decode_packet(value):
+            """Process accounting packets
 
-            pkt = AcctRequestPacket(rx_header_fields, body=raw_body, secret=value)
+            Args:
+              value(str): containing the TACACS+ shared secret
+            Exceptions:
+              None
+            Returns:
+              None
+            """
+
+            shared_secret = value
+
+            pkt = AcctRequestPacket(rx_header_fields, body=raw_body,
+                                    secret=shared_secret)
             rx_body_fields = pkt.decode
 
             # Create a request debug logging message
@@ -475,7 +576,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                server_msg='Functionality NOT implemented',
                                                data='Functionality NOT implemented')
 
-            reply = AcctReplyPacket(tx_header, fields=tx_body_fields, secret=value)
+            reply = AcctReplyPacket(tx_header, fields=tx_body_fields,
+                                    secret=shared_secret)
 
             # Create a response debug logging message
             tx_header_fields.length = reply.length
