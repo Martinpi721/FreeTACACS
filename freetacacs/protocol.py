@@ -190,10 +190,15 @@ class TACACSPlusProtocol(protocol.Protocol):
 
             tx_header = Header(tx_header_fields)
 
+            # Users credentials are not valid
+            if authenticated:
+                auth_status = flags.TAC_PLUS_AUTHEN_STATUS_PASS
+            else:
+                auth_status = flags.TAC_PLUS_AUTHEN_STATUS_FAIL
+
             # Build the reply packet body
-            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
-                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
-                                               server_msg='Functionality NOT implemented')
+            tx_body_fields = AuthenReplyFields(status=auth_status,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET)
 
             reply = AuthenReplyPacket(tx_header, fields=tx_body_fields,
                                       secret=shared_secret)
