@@ -179,16 +179,19 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
             mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
 
-            # Set the factory for the protocol
-            self.protocol.factory = self.factory
+            with patch.object(self.factory, 'valid_credentials') as mock_valid_credentials:
+                mock_valid_credentials.return_value = defer.succeed(True)
 
-            # Mock a dummy reply packet for self.transport.write
-            # Ensures that the test tidies up correctly
-            with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
-                mock_reply.return_value = bytes(b'dummy packet')
+                # Set the factory for the protocol
+                self.protocol.factory = self.factory
 
-                with capturedLogs() as events:
-                    yield self.protocol.dataReceived(bytes(start))
+                # Mock a dummy reply packet for self.transport.write
+                # Ensures that the test tidies up correctly
+                with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
+                    mock_reply.return_value = bytes(b'dummy packet')
+
+                    with capturedLogs() as events:
+                        yield self.protocol.dataReceived(bytes(start))
 
         event = events[0]
         self.assertTrue(len(events) == 2)
@@ -215,12 +218,88 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHEN)
         self.assertEqual(event['session_id'], 123456)
         self.assertEqual(event['sequence_no'], 2)
-        self.assertEqual(event['length'], 35)
+        self.assertEqual(event['length'], 6)
 
         # Reply packet body data
-        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHEN_STATUS_ERROR)
+        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHEN_STATUS_PASS)
         self.assertEqual(event['flags'], 0)
-        self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
+        self.assertEqual(event['server_msg'], '')
+        self.assertEqual(event['data'], '')
+
+
+    @defer.inlineCallbacks
+    def test_selection_of_pap_authentication_flow_auth_failure(self):
+        """Test that we can carry out PAP authentication correctly"""
+
+        # Build a AuthStart packet with PAP auth
+        tx_header_fields = HeaderFields(version=self._auth_version,
+                                        packet_type=flags.TAC_PLUS_AUTHEN,
+                                        session_id=123456)
+
+        tx_header = Header(tx_header_fields)
+
+        # Build the reply packet body
+        tx_body_fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
+                                           authen_type=flags.TAC_PLUS_AUTHEN_TYPE_PAP,
+                                           authen_service=flags.TAC_PLUS_AUTHEN_SVC_LOGIN,
+                                           priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
+                                           user='jsmith',
+                                           port='python_tty0',
+                                           remote_address='python_device',
+                                           data='top_secret')
+
+        start = AuthenStartPacket(tx_header, fields=tx_body_fields,
+                                  secret='shared_secret')
+
+        # Mock the necessary functions
+        with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
+            mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
+
+            with patch.object(self.factory, 'valid_credentials') as mock_valid_credentials:
+                mock_valid_credentials.return_value = defer.succeed(False)
+
+                # Set the factory for the protocol
+                self.protocol.factory = self.factory
+
+                # Mock a dummy reply packet for self.transport.write
+                # Ensures that the test tidies up correctly
+                with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
+                    mock_reply.return_value = bytes(b'dummy packet')
+
+                    with capturedLogs() as events:
+                        yield self.protocol.dataReceived(bytes(start))
+
+        event = events[0]
+        self.assertTrue(len(events) == 2)
+
+        # Start packet header data
+        self.assertEqual(event['version'], 193)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHEN)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 1)
+        self.assertEqual(event['length'], 48)
+
+        # Start packet body data
+        self.assertEqual(event['action'], flags.TAC_PLUS_AUTHEN_LOGIN)
+        self.assertEqual(event['authen_type'], flags.TAC_PLUS_AUTHEN_TYPE_PAP)
+        self.assertEqual(event['priv_lvl'], flags.TAC_PLUS_PRIV_LVL_MIN)
+        self.assertEqual(event['user'], 'jsmith')
+        self.assertEqual(event['port'], 'python_tty0')
+        self.assertEqual(event['remote_address'], 'python_device')
+        self.assertEqual(event['data'], 'top_secret')
+
+        event = events[1]
+        # Reply packet header data
+        self.assertEqual(event['version'], 193)
+        self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHEN)
+        self.assertEqual(event['session_id'], 123456)
+        self.assertEqual(event['sequence_no'], 2)
+        self.assertEqual(event['length'], 6)
+
+        # Reply packet body data
+        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHEN_STATUS_FAIL)
+        self.assertEqual(event['flags'], 0)
+        self.assertEqual(event['server_msg'], '')
         self.assertEqual(event['data'], '')
 
 
@@ -252,16 +331,19 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         with patch.object(self.factory, 'get_shared_secret') as mock_auth_shared_secret:
             mock_auth_shared_secret.return_value = defer.succeed('shared_secret')
 
-            # Set the factory for the protocol
-            self.protocol.factory = self.factory
+            with patch.object(self.factory, 'valid_credentials') as mock_valid_credentials:
+                mock_valid_credentials.return_value = defer.succeed(False)
 
-            # Mock a dummy reply packet for self.transport.write
-            # Ensures that the test tidies up correctly
-            with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
-                mock_reply.return_value = bytes(b'dummy packet')
+                # Set the factory for the protocol
+                self.protocol.factory = self.factory
 
-                with capturedLogs() as events:
-                    yield self.protocol.dataReceived(bytes(start))
+                # Mock a dummy reply packet for self.transport.write
+                # Ensures that the test tidies up correctly
+                with patch.object(AuthenReplyPacket, '__bytes__') as mock_reply:
+                    mock_reply.return_value = bytes(b'dummy packet')
+
+                    with capturedLogs() as events:
+                        yield self.protocol.dataReceived(bytes(start))
 
         event = events[0]
         self.assertTrue(len(events) == 2)
