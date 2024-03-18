@@ -31,6 +31,10 @@ class ITACACSPlusService(Interface):
         Return a deferred returning L{bytes}.
         """
 
+    def valid_credentials(username, password):
+        """
+        Return a deferred returning L{bytes}.
+        """
 
 @implementer(ITACACSPlusService)
 class TACACSPlusService(service.Service):
@@ -85,6 +89,8 @@ class TACACSPlusService(service.Service):
         if self.cfg['auth_type'] == 'file':
             self.credentials = { 'test': 'test' }
             self.log.info(f"Authentication credentials loaded from {self.cfg['auth_file']}.")
+        else:
+            self.credentials = { 'test': 'test' }
 
         # Load authorisation from file if we are using a file backend
         if self.cfg['author_type'] == 'file':
@@ -120,7 +126,7 @@ class TACACSPlusService(service.Service):
           secret(str): containing the shared secret key
         """
 
-        return defer.succeed(self.credentials.get(True, False))
+        return defer.succeed(self.credentials.get(username, False))
 
 
     def startService(self):

@@ -20,7 +20,12 @@ from freetacacs.protocol import TACACSPlusProtocol
 
 
 class ITACACSPlusFactory(Interface):
-    def get_shared_credentials(ip):
+    def get_shared_secret(ip):
+        """
+        Return a deferred returning L{bytes}
+        """
+
+    def valid_credentials(username, password):
         """
         Return a deferred returning L{bytes}
         """
@@ -41,5 +46,7 @@ class TACACSPlusFactoryFromService(protocol.ServerFactory):
     def get_shared_secret(self, ip):
         return self.service.get_shared_secret(ip)
 
+    def valid_credentials(self, username, password):
+        return self.service.valid_credentials(username, password)
 
 components.registerAdapter(TACACSPlusFactoryFromService, ITACACSPlusService, ITACACSPlusFactory)
