@@ -170,6 +170,8 @@ class TACACSPlusProtocol(protocol.Protocol):
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
+            PAP response can only be PASS, FAIL or ERROR
+
             Args:
               value(bool): user credentials are valid/invalid [True|False]
             Exceptions:
@@ -199,7 +201,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             # Write your packet to the transport layer
             self.transport.write(bytes(reply))
 
-            # Create a response debug logging message
+            # Create and log the response debug logging message
             tx_header_fields.length = reply.length
             kwargs = create_log_dict(tx_header_fields, tx_body_fields)
             kwargs['text'] = 'tx packet <{0}>'.format(' '.join([str(tx_header_fields),
@@ -207,7 +209,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.log.debug(kwargs['text'], **kwargs)
 
 
-        # Create a request debug logging message
+        # Create and log the request debug logging message
         kwargs = create_log_dict(rx_header_fields, rx_body_fields)
         kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
                                                             str(rx_body_fields)]))
