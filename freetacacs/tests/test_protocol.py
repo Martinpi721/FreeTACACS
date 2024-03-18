@@ -53,7 +53,9 @@ class TestTACACSPlusProtocol(unittest.TestCase):
               mock_get_root_pwnam, mock_path_exists):
         """Setup for all tests"""
 
-        self.data_dir = './freetacacs/tests/data/commandline'
+        self._data_dir = './freetacacs/tests/data/commandline'
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
 
         args = [
                 '--user',
@@ -109,7 +111,8 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can handle being sent invalid packets"""
 
         required_msg = 'NAS 192.168.1.1:54321 connected to 10.0.0.1:12345 sent' \
-                       ' a packet with a invalid header. Closing connection.'
+                       ' a packet with a header not meeting TACACS+' \
+                       ' specifications. Closing connection.'
 
         with capturedLogs() as events:
             self.protocol.dataReceived(b'not_a_tacacs_packet')
@@ -120,8 +123,6 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['server_port'], 12345)
         self.assertEqual(event['nas_ip'], '192.168.1.1')
         self.assertEqual(event['nas_port'], 54321)
-        self.assertEqual(event['session_id'], 1633645665)
-        self.assertEqual(event['sequence_no'], 116)
         self.assertEqual(event['log_level'], LogLevel.error)
         self.assertEqual(event['text'], required_msg)
         self.assertEqual(event['log_format'], required_msg)
@@ -151,11 +152,11 @@ class TestTACACSPlusProtocol(unittest.TestCase):
 
 
     @defer.inlineCallbacks
-    def test_selection_of_pap_authentication_flow(self):
-        """Test that we can route PAP authentication correctly"""
+    def test_selection_of_pap_authentication_flow_auth_success(self):
+        """Test that we can carry out PAP authentication correctly"""
 
         # Build a AuthStart packet with PAP auth
-        tx_header_fields = HeaderFields(version=193,
+        tx_header_fields = HeaderFields(version=self._auth_version,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
                                         session_id=123456)
 
@@ -228,7 +229,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can route CHAP authentication correctly"""
 
         # Build a AuthStart packet with PAP auth
-        tx_header_fields = HeaderFields(version=193,
+        tx_header_fields = HeaderFields(version=self._auth_version,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
                                         session_id=123456)
 
@@ -301,7 +302,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can route ASCII authentication correctly"""
 
         # Build a AuthStart packet with PAP auth
-        tx_header_fields = HeaderFields(version=193,
+        tx_header_fields = HeaderFields(version=self._auth_version,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
                                         session_id=123456)
 
@@ -374,7 +375,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can route authorisation packets correctly"""
 
         # Build a AuthorRequest packet
-        tx_header_fields = HeaderFields(version=192,
+        tx_header_fields = HeaderFields(version=self._version,
                                         packet_type=flags.TAC_PLUS_AUTHOR,
                                         session_id=123456)
 
@@ -447,7 +448,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can route accounting packets correctly"""
 
         # Build a AuthorRequest packet
-        tx_header_fields = HeaderFields(version=192,
+        tx_header_fields = HeaderFields(version=self._version,
                                         packet_type=flags.TAC_PLUS_ACCT,
                                         session_id=123456)
 
@@ -520,7 +521,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Test that we can route authentication continue packets correctly"""
 
         # Build a AuthenContinue packet
-        tx_header_fields = HeaderFields(version=193,
+        tx_header_fields = HeaderFields(version=self._auth_version,
                                         packet_type=flags.TAC_PLUS_AUTHEN,
                                         session_id=123456)
 
