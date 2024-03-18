@@ -82,7 +82,6 @@ class TestAcctReply(unittest.TestCase):
 
         raw_pkt = b'\xc0\x03\x01\x00\x01\xaf\x137\x00\x00\x00?\xe2\x96\xa0a\xdax\xe3\x97b\xe8[$\xf51\xa4\x8b\xfb\xb15)LV\xfec\xe4+G\x10\x1bW\xd9\x9ecrYm9\x869!\x8a\xfcFM\xf8\xe8\xd5.\xfd\x0e9*\xa5\xe1\xd2\xf2\x17Y>\xf5\xc7\x89N'
 
-        version = 192
         packet_type = flags.TAC_PLUS_ACCT
         session_id = 28250935
 
@@ -92,8 +91,7 @@ class TestAcctReply(unittest.TestCase):
                        ' data: Functionality NOT implemented'
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Accounting request instance
@@ -114,13 +112,11 @@ class TestAcctReply(unittest.TestCase):
     def test_create_instance_with_fields(self):
         """Test we can create an instance from TACACSPlusAcctReply class"""
 
-        version = 192
         packet_type = flags.TAC_PLUS_ACCT
         session_id = 2620865572
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         fields = AcctReplyFields(server_msg='Functionality NOT implemented',
@@ -141,13 +137,11 @@ class TestAcctReply(unittest.TestCase):
 
         raw_pkt = b'\xc0\x03\x01\x00\x01\xaf\x137\x00\x00\x00?\xe2\x96\xa0a\xdax\xe3\x97b\xe8[$\xf51\xa4\x8b\xfb\xb15)LV\xfec\xe4+G\x10\x1bW\xd9\x9ecrYm9\x869!\x8a\xfcFM\xf8\xe8\xd5.\xfd\x0e9*\xa5\xe1\xd2\xf2\x17Y>\xf5\xc7\x89N'
 
-        version = 192
         packet_type = flags.TAC_PLUS_ACCT
         session_id = 1
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
@@ -167,13 +161,11 @@ class TestAcctReply(unittest.TestCase):
 
         raw_pkt = b'\xc0\x03\x01\x00\x01\xaf\x137\x00\x00\x00?\xe2\x96\xa0a\xdax\xe3\x97b\xe8[$\xf51\xa4\x8b\xfb\xb15)LV\xfec\xe4+G\x10\x1bW\xd9\x9ecrYm9\x869!\x8a\xfcFM\xf8\xe8\xd5.\xfd\x0e9*\xa5\xe1\xd2\xf2\x17Y>\xf5\xc7\x89N'
 
-        version = 192
         packet_type = flags.TAC_PLUS_ACCT
         session_id = 2620865572
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance

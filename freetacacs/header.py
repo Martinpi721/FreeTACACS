@@ -14,16 +14,16 @@ from dataclasses import dataclass
 import six
 
 # Local imports
-from freetacacs.flags import TAC_PLUS_PACKET_TYPES
+from freetacacs import flags
 
 log = logging.getLogger(__name__)
 
 @dataclass
 class HeaderFields:
     """TACACS+ header fields required to create packets"""
-    version: int
     packet_type: int
     session_id: int
+    version: int = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
     length: int = 0
     sequence_no: int = 1
     flags: int = 0
@@ -48,6 +48,9 @@ class HeaderFields:
         if not isinstance(self.flags, int):
             raise TypeError('Flags should be of type int')
 
+        if not self.version == 192 and not self.version == 193:
+            raise ValueError('Invalid TACACS+ packet version no.')
+
 
     def __str__(self):
         """String representation of the header fields
@@ -62,7 +65,7 @@ class HeaderFields:
 
         # Map the hex packet type to a text string
         result = filter(lambda item: item[1] == self.packet_type,
-                                     TAC_PLUS_PACKET_TYPES.items())
+                                     flags.TAC_PLUS_PACKET_TYPES.items())
 
         # There will only ever be one result so take first tuple value from it
         packet_type = list(result)[0][0]
@@ -216,7 +219,7 @@ class TACACSPlusHeader:
         """
 
         result = filter(lambda item: item[1] == self._packet_type,
-                                     TAC_PLUS_PACKET_TYPES.items())
+                                     flags.TAC_PLUS_PACKET_TYPES.items())
         return list(result)[0][0]
 
 
@@ -253,8 +256,12 @@ class TACACSPlusHeader:
             raise ValueError('Unable to extract header.' \
                              ' Header does meet TACACS+ encoding standards.') from e
 
-        return HeaderFields(version, packet_type, session_id, length,
-                            sequence_no, flags)
+        return HeaderFields(version=version,
+                            packet_type=packet_type,
+                            session_id=session_id,
+                            length=length,
+                            sequence_no=sequence_no,
+                            flags=flags)
 
 
     def __str__(self):
@@ -270,13 +277,13 @@ class TACACSPlusHeader:
 
         # Map the hex packet type to a text string
         result = filter(lambda item: item[1] == self._packet_type,
-                                     TAC_PLUS_PACKET_TYPES.items())
+                                     flags.TAC_PLUS_PACKET_TYPES.items())
 
         # There will only ever be one result so take first tuple value from it
         packet_type = list(result)[0][0]
 
         # Build the string representation
-        packet = f'version: {self._version}, type: {packet_type},' \
+        packet = f'version: {self._version}, packet_type: {packet_type},' \
                  f' session_id: {self._session_id}, length: {self._length},' \
                  f' sequence_no: {self._sequence_no}, flags: {self._flags}'
 

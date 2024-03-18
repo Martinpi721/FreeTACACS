@@ -230,7 +230,6 @@ class TestAuthorRequest(unittest.TestCase):
 
         raw_pkt = b'\xc0\x02\x01\x004\x04\x12\xe7\x00\x00\x005\xabh\x1e\xb8(\x811\xae8\xb2\xc4\xa8a\x97pj\xc7\x9dj~\xa7\xe3\xba\xca+^\x13DP2\x1b\x8e\x80\x0f\xf5\x8f\x05j\xb6\xd6\x93\xb7 Nd\xb4\x05\xc9\xaa\xd8\xc3\xab\x9b'
 
-        version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
 
@@ -242,8 +241,7 @@ class TestAuthorRequest(unittest.TestCase):
                 ' arg_1: service=system'
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
@@ -269,13 +267,11 @@ class TestAuthorRequest(unittest.TestCase):
     def test_create_instance_with_fields(self):
         """Test we can create an instance from TACACSPlusAuthorRequest class"""
 
-        version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 2620865572
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         fields = AuthorRequestFields(authen_method=flags.TAC_PLUS_AUTHEN_METH_TACACSPLUS,
@@ -302,13 +298,11 @@ class TestAuthorRequest(unittest.TestCase):
 
         raw_pkt = b'\xc0\x02\x01\x004\x04\x12\xe7\x00\x00\x005\xabh\x1e\xb8(\x811\xae8\xb2\xc4\xa8a\x97pj\xc7\x9dj~\xa7\xe3\xba\xca+^\x13DP2\x1b\x8e\x80\x0f\xf5\x8f\x05j\xb6\xd6\x93\xb7 Nd\xb4\x05\xc9\xaa\xd8\xc3\xab\x9b'
 
-        version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 1
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
@@ -328,13 +322,11 @@ class TestAuthorRequest(unittest.TestCase):
 
         raw_pkt = b'\xc0\x02\x01\x004\x04\x12\xe7\x00\x00\x005\xabh\x1e\xb8(\x811\xae8\xb2\xc4\xa8a\x97pj\xc7\x9dj~\xa7\xe3\xba\xca+^\x13DP2\x1b\x8e\x80\x0f\xf5\x8f\x05j\xb6\xd6\x93\xb7 Nd\xb4\x05\xc9\xaa\xd8\xc3\xab\x9b'
 
-        version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
@@ -354,13 +346,11 @@ class TestAuthorRequest(unittest.TestCase):
 
         raw_pkt = b'\xc0\x02\x01\x004\x04\x12\xe7\x00\x00\x005\xabh\x1e\xb8(\x811\xae8\xb2\xc4\xa8a\x97pj\xc7\x9dj~\xa7\xe3\xba\xca+^\x13DP2\x1b\x8e\x80\x0f\xf5\x8f\x05j\xb6\xd6\x93\xb7 Nd\xb4\x05\xc9\xaa\xd8\xc3\xab\x9b'
 
-        version = 192
         packet_type = flags.TAC_PLUS_AUTHOR
         session_id = 872682215
 
         # Configure the header
-        header = Header(HeaderFields(version=version,
-                                     packet_type=packet_type,
+        header = Header(HeaderFields(packet_type=packet_type,
                                      session_id=session_id))
 
         # Convert packet to a byte-stream and create Authorisation request instance
