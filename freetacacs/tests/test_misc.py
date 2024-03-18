@@ -11,6 +11,7 @@ Functions:
 from twisted.trial import unittest
 
 # Import code to be tested
+from freetacacs import flags
 from freetacacs.header import HeaderFields
 from freetacacs.authentication import AuthenStartFields
 from freetacacs.authentication import AuthenReplyFields
@@ -18,6 +19,13 @@ from freetacacs.misc import create_log_dict
 
 class TestCreateLogDict(unittest.TestCase):
     """Class to test the create_log_dict function"""
+
+    def setUp(self):
+        """Setup for all tests"""
+
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
+
 
     def test_create_log_dict_for_auth_start(self):
         """Test we can create a valid log dictionary for auth start"""
@@ -28,7 +36,8 @@ class TestCreateLogDict(unittest.TestCase):
                         'sequence_no': 1, 'authen_service': 1, 'session_id': 123,
                         'user': 'test', 'version': 193}
 
-        header = HeaderFields(version=193, packet_type=0x01, session_id=123)
+        header = HeaderFields(version=self._auth_version, packet_type=0x01,
+                              session_id=123)
         body = AuthenStartFields(action=0x01, priv_lvl=0x01, authen_service=0x01,
                                  user='test', port='1234', remote_address='temp',
                                  authen_type=0x01, data='test')
@@ -45,7 +54,8 @@ class TestCreateLogDict(unittest.TestCase):
                          'data': 'temp', 'version': 193, 'packet_type': 0x01,
                          'session_id': 123, 'length': 0, 'sequence_no': 1}
 
-        header = HeaderFields(version=193, packet_type=0x01, session_id=123)
+        header = HeaderFields(version=self._auth_version, packet_type=0x01,
+                              session_id=123)
         body = AuthenReplyFields(status=0x01, flags=0x01, server_msg='test',
                                  data='temp')
 

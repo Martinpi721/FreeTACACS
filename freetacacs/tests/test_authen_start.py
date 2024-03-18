@@ -11,6 +11,7 @@ Functions:
 
 import six
 import pytest
+from twisted.trial import unittest
 
 # Import code to be tested
 from freetacacs import flags
@@ -20,15 +21,21 @@ from freetacacs.authentication import AuthenStartFields
 from freetacacs.authentication import TACACSPlusAuthenStart as AuthenStartPacket
 
 
-class TestAuthenStartFields:
+class TestAuthenStartFields(unittest.TestCase):
     """Test class for testing the Authentication Start Fields class"""
+
+    def setUp(self):
+        """Setup for all tests"""
+
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
 
 
     def test_invalid_action(self):
         """Test we handle passing a invalid action field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -43,7 +50,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid priv_lvl field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -58,7 +65,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid authentication type field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -73,7 +80,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid authentication service field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -88,7 +95,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid user field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -103,7 +110,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid port field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -118,7 +125,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid remote address field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -133,7 +140,7 @@ class TestAuthenStartFields:
         """Test we handle passing a invalid data field type"""
 
         # Configure the header
-        header = Header(HeaderFields(version=193,
+        header = Header(HeaderFields(version=self._auth_version,
                                      packet_type=flags.TAC_PLUS_AUTHEN,
                                      session_id=123456,
                                      length=40))
@@ -147,13 +154,11 @@ class TestAuthenStartFields:
     def test_authen_start_fields_string(self):
         """Test we can get a string representation of authen start fields"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, authen_service=1,
                                    user='test', port='1234', remote_address='test',
@@ -170,13 +175,11 @@ class TestAuthenStartFields:
     def test_authen_start_fields_dict(self):
         """Test we can get a dict representation of authen start fields"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         fields = AuthenStartFields(action=1, priv_lvl=1, authen_type=1, authen_service=1,
                                    user='test', port='1234', remote_address='test',
@@ -187,18 +190,20 @@ class TestAuthenStartFields:
                                 'remote_address': 'test', 'data': 'testing123'}
 
 
-class TestAuthenStart:
+class TestAuthenStart(unittest.TestCase):
     """Test class for testing the Authentication Start class"""
+
+    def setUp(self):
+        """Setup for all tests"""
+
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
+
 
     def test_create_instance_with_body(self):
         """Test we can create a instance of TACACSPlusAuthenStart class"""
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
-
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 0
 
         # What should be returned when we call __str__ on object
         required_str = 'action: 1, priv_lvl:' \
@@ -208,7 +213,9 @@ class TestAuthenStart:
                 ' rem_addr: python_device, data: test'
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
@@ -233,13 +240,10 @@ class TestAuthenStart:
     def test_create_instance_with_fields(self):
         """Test we can create an instance from TACACSPlusAuthenStart class"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         fields = AuthenStartFields(action=flags.TAC_PLUS_AUTHEN_LOGIN,
                                    priv_lvl=flags.TAC_PLUS_PRIV_LVL_MIN,
@@ -265,13 +269,10 @@ class TestAuthenStart:
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 1
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=1))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
@@ -290,13 +291,10 @@ class TestAuthenStart:
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
@@ -315,13 +313,10 @@ class TestAuthenStart:
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)

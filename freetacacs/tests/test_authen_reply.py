@@ -11,6 +11,7 @@ Functions:
 
 import six
 import pytest
+from twisted.trial import unittest
 
 # Import code to be tested
 from freetacacs import flags
@@ -83,21 +84,25 @@ class TestAuthenReplyFields:
                                 'data': 'test'}
 
 
-class TestAuthenReply:
+class TestAuthenReply(unittest.TestCase):
     """Test class for testing the Authentication Reply class"""
+
+    def setUp(self):
+        """Setup for all tests"""
+
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
+
 
     def test_create_instance_with_body(self):
         """Test we can create an instance from TACACSPlusAuthenReply class"""
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         # Convert packet to a byte-stream and create Authentication reply instance
         raw = six.BytesIO(raw_pkt)
@@ -112,13 +117,10 @@ class TestAuthenReply:
     def test_create_instance_with_fields(self):
         """Test we can create an instance from TACACSPlusAuthenReply class"""
 
-        version = 193
-        packet_type = flags.TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572))
 
         fields = AuthenReplyFields(status=0x00, flags=0x00,
                                    server_msg='test', data='test')

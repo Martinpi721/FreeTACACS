@@ -15,7 +15,7 @@ from twisted.trial import unittest
 import six
 
 # Import code to be tested
-from freetacacs.flags import TAC_PLUS_AUTHEN
+from freetacacs import flags
 from freetacacs.packet import TACACSPlusPacket as Packet
 from freetacacs.header import HeaderFields
 from freetacacs.header import TACACSPlusHeader as Header
@@ -110,20 +110,24 @@ class TestReplyFields(unittest.TestCase):
         assert str(e.value) == 'Data should be of type string'
 
 
-
-class TestTACACSPlusPacket:
+class TestTACACSPlusPacket(unittest.TestCase):
     """Test class for testing the packet module"""
+
+    def setUp(self):
+        """Setup for all tests"""
+
+        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
+
 
     def test_create_instance(self):
         """Test we can create a instance of TACACSPlusPacket class"""
 
-        version = 193
-        packet_type = TAC_PLUS_AUTHEN
-        session_id = 1932205026
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=1932205026,
+                                     length=40))
 
         raw = six.BytesIO(b'TACACS+ data body')
         pkt = Packet(header, raw.read(), 'test')
@@ -136,13 +140,12 @@ class TestTACACSPlusPacket:
 
         raw_pkt = b"\xc1\x01\x01\x00\x9c7<$\x00\x00\x00(\xa3\x0c\xe1\xb1\x97\xf4f\x10M\xbb\xed3z:\xab44f\xed\xed\x7f\xa2\x1d\xdcL'E\xd3\x15\xbc\x8e\x11r\xc6\x9b\\\x16Tqg"
 
-        version = 193
-        packet_type = TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
 
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_pkt)
@@ -157,13 +160,11 @@ class TestTACACSPlusPacket:
 
         raw_plain_body = b'\x01\x00\x02\x01\x04\x0b\r\x04testpython_tty0python_devicetest'
 
-        version = 193
-        packet_type = TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_plain_body)
@@ -177,13 +178,11 @@ class TestTACACSPlusPacket:
 
         raw_plain_body = b'\x01\x00\x02\x01\x04\x0b\r\x04testpython_tty0python_devicetest'
 
-        version = 193
-        packet_type = TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_plain_body)
@@ -197,13 +196,11 @@ class TestTACACSPlusPacket:
 
         raw_plain_body = b'\x01\x00\x02\x01\x04\x0b\r\x04testpython_tty0python_devicetest'
 
-        version = 193
-        packet_type = TAC_PLUS_AUTHEN
-        session_id = 2620865572
-        length = 40
-
         # Configure the header
-        header = Header(HeaderFields(version, packet_type, session_id, length))
+        header = Header(HeaderFields(version=self._auth_version,
+                                     packet_type=flags.TAC_PLUS_AUTHEN,
+                                     session_id=2620865572,
+                                     length=40))
 
         # Convert packet to a byte-stream and create Authentication start instance
         raw = six.BytesIO(raw_plain_body)
