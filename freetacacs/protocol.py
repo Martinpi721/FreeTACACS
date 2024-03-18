@@ -93,26 +93,6 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Check the sequence no. a client sequence no. should always be odd
-        # meaning any response must be even. In addition the max sequence no.
-        # to meet the RFC specification is 255.
-        if rx_header_fields.sequence_no % 2 == 0:
-            self.transport.loseConnection()
-            return
-
-        if rx_header_fields.sequence_no > 255:
-            self.transport.loseConnection()
-            return
-
-        # Create a request debug logging message
-        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
-        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
-                                                            str(rx_body_fields)]))
-        self.log.debug(kwargs['text'], **kwargs)
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
@@ -151,7 +131,27 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+
+        # Check the sequence no. a client sequence no. should always be odd
+        # meaning any response must be even. In addition the max sequence no.
+        # to meet the RFC specification is 255.
+        if rx_header_fields.sequence_no % 2 == 0:
+            self.transport.loseConnection()
+            return
+
+        if rx_header_fields.sequence_no > 255:
+            self.transport.loseConnection()
+            return
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(send_response)
+        d.addErrback(catch_error)
 
 
     def _auth_pap(self, rx_header_fields, rx_body_fields, shared_secret):
@@ -216,8 +216,8 @@ class TACACSPlusProtocol(protocol.Protocol):
         # Validate the users credentials via the deferred
         d = self.factory.valid_credentials(rx_body_fields.user,
                                            rx_body_fields.data)
-        d.addErrback(catch_error)
         d.addCallback(send_response)
+        d.addErrback(catch_error)
 
 
     def _auth_chap(self, rx_header_fields, rx_body_fields, shared_secret):
@@ -233,15 +233,6 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Create a request debug logging message
-        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
-        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
-                                                            str(rx_body_fields)]))
-        self.log.debug(kwargs['text'], **kwargs)
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
@@ -280,7 +271,16 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(send_response)
+        d.addErrback(catch_error)
 
 
     def _auth_mschap(self, rx_header_fields, rx_body_fields, shared_secret):
@@ -296,15 +296,6 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Create a request debug logging message
-        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
-        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
-                                                            str(rx_body_fields)]))
-        self.log.debug(kwargs['text'], **kwargs)
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
@@ -343,7 +334,16 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(send_response)
+        d.addErrback(catch_error)
 
 
     def _auth_mschapv2(self, rx_header_fields, rx_body_fields, shared_secret):
@@ -359,15 +359,6 @@ class TACACSPlusProtocol(protocol.Protocol):
           None
         """
 
-        # Create a request debug logging message
-        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
-        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
-                                                            str(rx_body_fields)]))
-        self.log.debug(kwargs['text'], **kwargs)
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
-
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
@@ -406,7 +397,15 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+        # Create a request debug logging message
+        kwargs = create_log_dict(rx_header_fields, rx_body_fields)
+        kwargs['text'] = 'rx packet <{0}>'.format(' '.join([str(rx_header_fields),
+                                                            str(rx_body_fields)]))
+        self.log.debug(kwargs['text'], **kwargs)
+
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(send_response)
+        d.addErrback(catch_error)
 
 
     def _authentication(self, rx_header_fields, raw_body):
@@ -452,8 +451,8 @@ class TACACSPlusProtocol(protocol.Protocol):
 
 
         d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
         d.addCallback(decode_packet)
+        d.addErrback(catch_error)
 
 
     def _authorisation(self, rx_header_fields, raw_body):
@@ -467,9 +466,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         Returns:
           None
         """
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
 
         def decode_packet(value):
             """Process authorisation packets
@@ -522,7 +518,9 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                                 str(tx_body_fields)]))
             self.log.debug(kwargs['text'], **kwargs)
 
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(decode_packet)
+        d.addErrback(catch_error)
 
 
     def _accounting(self, rx_header_fields, raw_body):
@@ -536,9 +534,6 @@ class TACACSPlusProtocol(protocol.Protocol):
         Returns:
           None
         """
-
-        d = self.factory.get_shared_secret(self._nas_ip)
-        d.addErrback(catch_error)
 
         def decode_packet(value):
             """Process accounting packets
@@ -589,7 +584,9 @@ class TACACSPlusProtocol(protocol.Protocol):
             # Write your packet to the transport layer
             self.transport.write(bytes(reply))
 
+        d = self.factory.get_shared_secret(self._nas_ip)
         d.addCallback(decode_packet)
+        d.addErrback(catch_error)
 
 
     def connectionMade(self):
