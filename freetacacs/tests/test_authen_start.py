@@ -148,7 +148,7 @@ class TestAuthenStartFields(unittest.TestCase):
         with pytest.raises(TypeError) as e:
             fields = AuthenStartFields(data=1234)
 
-        assert str(e.value) == 'Data should be of type string'
+        assert str(e.value) == 'Data should be of type byte literal or string'
 
 
     def test_authen_start_fields_string(self):

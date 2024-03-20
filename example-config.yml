@@ -1,0 +1,24 @@
+# secrets_type
+# Where FreeTACACS will load shared secrets from
+# Default: file
+secrets_type: file
+
+# secrets_file
+# Full path to the JSON formatted shared secrets file
+# Default: /etc/freetacacs/shared_secrets.json
+secrets_file: ./example-shared-secrets.json
+
+# auth_type
+# Authentication mechanism to use to authenticate TACACS users
+# Default: pam
+auth_type: pam
+
+# author_type
+# Authorisation mechanism to use to authorise TACACS users actions
+# Default: file
+author_type: file
+
+# author_file
+# Full path to the JSON formatted authorisations file
+# Default: /etc/freetacacs/authorisations.json
+author_file: ./example-authorisations.json

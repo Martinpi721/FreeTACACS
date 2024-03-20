@@ -38,8 +38,8 @@ class AuthenStartFields(RequestFields):
         if not isinstance(self.action, int):
             raise TypeError('Action should be of type int')
 
-        if not isinstance(self.data, str):
-            raise TypeError('Data should be of type string')
+        if not isinstance(self.data, str) and not isinstance(self.data, bytes):
+            raise TypeError('Data should be of type byte literal or string')
 
 
     def __str__(self):
@@ -231,7 +231,15 @@ class TACACSPlusAuthenStart(Packet):
             self._user = body.read(self._user_len).decode('UTF-8')
             self._port = body.read(self._port_len).decode('UTF-8')
             self._remote_address = body.read(self._rem_addr_len).decode('UTF-8')
-            self._data = body.read(self._data_len).decode('UTF-8')
+
+            # In a pap/ascii auth start this will be a string, in the chap auth
+            # variants we need to do further decoding
+            data = body.read(self._data_len)
+            try:
+                self._data = data.decode('UTF-8')
+            except ValueError as e:
+                self._data = data
+
         except ValueError as e:
             raise ValueError('Unable to decode AuthenStart packet. TACACS+' \
                              ' client/server shared key probably does not' \
