@@ -65,9 +65,9 @@ class TestTACACSPlusProtocol(unittest.TestCase):
                 '--port',
                 4949,
                 '--config',
-                '{self.data_dir}/etc/freetacacs.conf',
+                '{self._data_dir}/etc/freetacacs.conf',
                 '--log',
-                f'{self.data_dir}/log/freetacacs.log',
+                f'{self._data_dir}/log/freetacacs.log',
             ]
 
         options = CommandLineOptions()
