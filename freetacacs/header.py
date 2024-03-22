@@ -116,7 +116,7 @@ class TACACSPlusHeader:
 
     @property
     def length(self):
-        """All the body lentgh to TACACS+ packet header
+        """Add the body length to TACACS+ packet header
 
         Args:
           length(int): length of the TACACS+ body
