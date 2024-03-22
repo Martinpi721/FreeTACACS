@@ -2,8 +2,7 @@
 Module implements the TACACS+ configuration parsing
 
 Classes:
-    ConfigTypeError
-    ConfigFileError
+    None
 
 Functions:
     load_config
@@ -14,16 +13,11 @@ import os
 import yaml
 from twisted.logger import Logger
 
+# Local imports
+from freetacacs.exceptions import ConfigTypeError, ConfigFileError
 
 # Setup the logger
 log = Logger()
-
-class ConfigTypeError(Exception):
-    """Raised when a configuration _type option is invalid"""
-
-
-class ConfigFileError(Exception):
-    """Raised when a configuration _file option is invalid"""
 
 
 def load_config(file_path):

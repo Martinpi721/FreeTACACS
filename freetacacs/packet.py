@@ -18,16 +18,15 @@ from twisted.logger import Logger
 import six
 import re
 
+# Local imports
+from freetacacs import flags
+from freetacacs.exceptions import (MissingServiceArgument,
+                                   MissingCmdArgument,
+                                   InvalidChapVersion,
+                                   InvalidPppPeerId)
+
 # Setup the logger
 log = Logger()
-
-
-class MissingServiceArgument(Exception):
-    """Raised when authorisation args do not include a service argument"""
-
-
-class MissingCmdArgument(Exception):
-    """Raised when authorisation arg service=shell but no cmd provided"""
 
 
 @dataclass
