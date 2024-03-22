@@ -233,6 +233,58 @@ class TACACSPlusPacket:
 
 
     @property
+    def chap(self, password, version='CHAP'):
+        """Build chap authentication string add it to the packet data attribute
+
+        Args:
+          password(str): Users password
+          version(str): CHAP authentication version [CHAP|MSCHAPv1|MSCHAPv2]
+        Exceptions:
+          InvalidChapVersion
+          InvalidPppPeerId
+        Returns:
+          chap_ppp_id(int): chap ppp peer id
+          chap_challenge(str): chap challenge secret
+          chap_response(byte): md5 hash of ppp peer id, password and chap
+                               challenge secret
+        """
+
+        # Default chap response length
+        CHAP_RESPONSE_LENGTH = flags.CHAP_CHALLENGE_RESPONSE_LENGTH
+
+        # Override with Microsoft CHAP response length or fail
+        if version in ['MSCHAPv1', 'MSCHAPv2']:
+            CHAP_RESPONSE_LENGTH = flags.MSCHAP_CHALLENGE_RESPONSE_LENGTH
+        else:
+            raise InvalidChapVersion(f'{version} is not a valid CHAP version')
+
+        challenge_len = len(self._data) - CHAP_RESPONSE_LENGTH
+
+        # Extract chap challenge from data field
+        chap_ppp_id = chr(self._data[0])
+        chap_challenge = self._data[1:challenge_len].decode('UTF-8')
+        chap_response = self._data[challenge_len:]
+
+        return chap_ppp_id, chap_challenge, chap_response
+
+
+    @chap.setter
+    def chap(self, password, chap_ppp_id, chap_challenge):
+
+        err_msg = f'{chap_ppp_id} is not a valid PPP Peer Id. PPP Peer Ids' \
+                   ' must be integers in the range of 0 to 255'
+
+        if not isinstance(chap_ppp_id, int):
+            raise InvalidPppPeerId(err_msg)
+
+        if chap_ppp_id < 0 or chap_ppp_id > 255:
+            raise InvalidPppPeerId(err_msg)
+
+        self._data = six.b(chap_ppp_id) + six.b(chap_challenge)
+        self._data += md5(six.b(chap_ppp_id + password + chap_challenge)).digest()
+
+
+    @property
     def obfuscate(self):
         """Obfuscate the packet body
 
