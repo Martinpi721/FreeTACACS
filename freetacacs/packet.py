@@ -12,7 +12,9 @@ Functions:
 
 import struct
 import logging
-from hashlib import md5
+import hmac
+from hashlib import md5, sha1
+from Crypto.Hash import MD4
 from dataclasses import dataclass
 from twisted.logger import Logger
 import six
@@ -238,6 +240,8 @@ class TACACSPlusPacket:
 
         Args:
           password(str): Users password
+          chap_ppp_id(int): PPP Peer id
+          chap_challenge(str): CHAP challenge secret
           version(str): CHAP authentication version [CHAP|MSCHAPv1|MSCHAPv2]
         Exceptions:
           InvalidChapVersion
@@ -269,10 +273,16 @@ class TACACSPlusPacket:
 
 
     @chap.setter
-    def chap(self, password, chap_ppp_id, chap_challenge):
+    def chap(self, password, chap_ppp_id, chap_challenge, version='CHAP'):
 
         err_msg = f'{chap_ppp_id} is not a valid PPP Peer Id. PPP Peer Ids' \
                    ' must be integers in the range of 0 to 255'
+
+        chap_generator = {
+                           'CHAP': self._md5_response,
+                           'MSCHAPv1': self._md4_response,
+                           'MSCHAPv2': self._hmac_sha1_response,
+                         }
 
         if not isinstance(chap_ppp_id, int):
             raise InvalidPppPeerId(err_msg)
@@ -281,7 +291,58 @@ class TACACSPlusPacket:
             raise InvalidPppPeerId(err_msg)
 
         self._data = six.b(chap_ppp_id) + six.b(chap_challenge)
-        self._data += md5(six.b(chap_ppp_id + password + chap_challenge)).digest()
+        self._data += chap_generator[version](chap_ppp_id, password, chap_challenge)
+
+
+    def _md5_response(self, chap_ppp_id, password, chap_challenge):
+        """Create MD5 CHAP response
+
+        Args:
+          chap_ppp_id(int): chap ppp peer id
+          password(str): users password
+          chap_challenge(str): chap challenge secret
+        Exceptions:
+          None
+        Returns:
+          response(str): MD5 hash of the CHAP response
+        """
+
+        return md5(six.b(chap_ppp_id + password + chap_challenge)).digest()
+
+
+    def _md4_response(self, chap_ppp_id, password, chap_challenge):
+        """Create MD4 MSCHAPv1 response
+
+        Args:
+          chap_ppp_id(int): chap ppp peer id
+          password(str): users password
+          chap_challenge(str): chap challenge secret
+        Exceptions:
+          None
+        Returns:
+          response(str): MD4 hash of the CHAP response
+        """
+
+        return md4.new(six.b(chap_ppp_id + password + chap_challenge)).hexdigest()
+
+
+    def _hmac_sha1_response(self, chap_ppp_id, password, chap_challenge):
+        """Create HMAC SHA1 MSCHAPv2 response
+
+        Args:
+          chap_ppp_id(int): chap ppp peer id
+          password(str): users password
+          chap_challenge(str): chap challenge secret
+        Exceptions:
+          None
+        Returns:
+          response(str): HMAC SHA1 hash of the CHAP response
+        """
+
+        challenge_hash = sha1(chap_challenge.encode('utf-8')).digest()
+        return hmac.new(six.b(chap_ppp_id +
+                              password.encode('utf-8') +
+                              challenge_hash)).hexdigest()
 
 
     @property
