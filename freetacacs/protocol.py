@@ -80,12 +80,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         }
 
 
-    def _auth_ascii(self, rx_header_fields, rx_body_fields, shared_secret):
+    def _auth_ascii(self, rx_header_fields, rx_body_fields, pkt, shared_secret):
         """Process ascii authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          pkt(obj): authentication body object
           shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
@@ -154,12 +155,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
 
-    def _auth_pap(self, rx_header_fields, rx_body_fields, shared_secret):
+    def _auth_pap(self, rx_header_fields, rx_body_fields, pkt, shared_secret):
         """Process pap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          pkt(obj): authentication body object
           shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
@@ -221,18 +223,18 @@ class TACACSPlusProtocol(protocol.Protocol):
         self.log.debug(kwargs['text'], **kwargs)
 
         # Validate the users credentials via the deferred
-        d = self.factory.valid_credentials(rx_body_fields.user,
-                                           rx_body_fields.data)
+        d = self.factory.valid_credentials(pkt)
         d.addCallback(send_response)
         d.addErrback(catch_error)
 
 
-    def _auth_chap(self, rx_header_fields, rx_body_fields, shared_secret):
+    def _auth_chap(self, rx_header_fields, rx_body_fields, pkt, shared_secret):
         """Process chap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          pkt(obj): authentication body object
           shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
@@ -290,12 +292,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
 
-    def _auth_mschap(self, rx_header_fields, rx_body_fields, shared_secret):
+    def _auth_mschap(self, rx_header_fields, rx_body_fields, pkt, shared_secret):
         """Process mschap authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          pkt(obj): authentication body object
           shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
@@ -353,12 +356,13 @@ class TACACSPlusProtocol(protocol.Protocol):
         d.addErrback(catch_error)
 
 
-    def _auth_mschapv2(self, rx_header_fields, rx_body_fields, shared_secret):
+    def _auth_mschapv2(self, rx_header_fields, rx_body_fields, pkt, shared_secret):
         """Process mschapv2 authentication
 
         Args:
           rx_header_fields(obj): dataclass containing header fields
           rx_body_fields(obj): dataclass containing body fields
+          pkt(obj): authentication body object
           shared_secret(str): containing the TACACS+ shared secret
         Exceptions:
           None
@@ -450,7 +454,7 @@ class TACACSPlusProtocol(protocol.Protocol):
                 # Use function mapper dict to decide how we handle the packet
                 self._auth_type_mapper[rx_body_fields.authen_type](rx_header_fields,
                                                                    rx_body_fields,
-                                                                   shared_secret)
+                                                                   pkt, shared_secret)
 
             # AuthenCONTINUE
             else:
