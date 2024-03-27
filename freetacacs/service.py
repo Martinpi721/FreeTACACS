@@ -136,7 +136,7 @@ class TACACSPlusService(service.Service):
         # All CHAP auth derivitives use a challange hash
         if pkt_fields.authen_type == flags.TAC_PLUS_AUTHEN_TYPE_CHAP:
             username = pkt_fields.user
-            ppp_id, challange, response = pkt.chap('test', version='CHAP'))
+            ppp_id, challange, response = pkt.chap('test', version='CHAP')
 
         # TODO
 
