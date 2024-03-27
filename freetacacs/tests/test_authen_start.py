@@ -169,7 +169,7 @@ class TestAuthenStartFields(unittest.TestCase):
                               ' authen_type: TAC_PLUS_AUTHEN_TYPE_ASCII,' \
                               ' authen_service: TAC_PLUS_AUTHEN_SVC_LOGIN,' \
                               ' user: test, port: 1234, remote_address: test,' \
-                              ' data: testing123'
+                              ' data: XXXSensitiveDataObfuscatedXXX'
 
 
     def test_authen_start_fields_dict(self):

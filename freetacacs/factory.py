@@ -46,7 +46,7 @@ class TACACSPlusFactoryFromService(protocol.ServerFactory):
     def get_shared_secret(self, ip):
         return self.service.get_shared_secret(ip)
 
-    def valid_credentials(self, username, password):
-        return self.service.valid_credentials(username, password)
+    def valid_credentials(self, pkt):
+        return self.service.valid_credentials(pkt)
 
 components.registerAdapter(TACACSPlusFactoryFromService, ITACACSPlusService, ITACACSPlusFactory)

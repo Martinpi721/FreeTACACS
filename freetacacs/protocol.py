@@ -192,7 +192,7 @@ class TACACSPlusProtocol(protocol.Protocol):
 
             tx_header = Header(tx_header_fields)
 
-            # Users credentials are not valid
+            # Users credentials valid
             if authenticated:
                 auth_status = flags.TAC_PLUS_AUTHEN_STATUS_PASS
             else:
@@ -245,6 +245,8 @@ class TACACSPlusProtocol(protocol.Protocol):
         def send_response(value):
             """Create a TACACS+ response packet and write it to the network transport
 
+            CHAP response can only be PASS, FAIL or ERROR
+
             Args:
               value(bool): user credentials are valid/invalid [True|False]
             Exceptions:
@@ -263,10 +265,15 @@ class TACACSPlusProtocol(protocol.Protocol):
 
             tx_header = Header(tx_header_fields)
 
+            # Users credentials valid
+            if authenticated:
+                auth_status = flags.TAC_PLUS_AUTHEN_STATUS_PASS
+            else:
+                auth_status = flags.TAC_PLUS_AUTHEN_STATUS_FAIL
+
             # Build the reply packet body
-            tx_body_fields = AuthenReplyFields(status=flags.TAC_PLUS_AUTHEN_STATUS_ERROR,
-                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET,
-                                               server_msg='Functionality NOT implemented')
+            tx_body_fields = AuthenReplyFields(status=auth_status,
+                                               flags=flags.TAC_PLUS_REPLY_FLAG_NOTSET)
 
             reply = AuthenReplyPacket(tx_header, fields=tx_body_fields, secret=value)
 
@@ -287,7 +294,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                             str(rx_body_fields)]))
         self.log.debug(kwargs['text'], **kwargs)
 
-        d = self.factory.get_shared_secret(self._nas_ip)
+        # Validate the users credentials via the deferred
+        d = self.factory.valid_credentials(pkt)
         d.addCallback(send_response)
         d.addErrback(catch_error)
 
@@ -351,7 +359,8 @@ class TACACSPlusProtocol(protocol.Protocol):
                                                             str(rx_body_fields)]))
         self.log.debug(kwargs['text'], **kwargs)
 
-        d = self.factory.get_shared_secret(self._nas_ip)
+        # Validate the users credentials via the deferred
+        d = self.factory.valid_credentials(pkt)
         d.addCallback(send_response)
         d.addErrback(catch_error)
 

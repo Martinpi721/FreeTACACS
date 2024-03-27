@@ -370,12 +370,12 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         self.assertEqual(event['packet_type'], flags.TAC_PLUS_AUTHEN)
         self.assertEqual(event['session_id'], 123456)
         self.assertEqual(event['sequence_no'], 2)
-        self.assertEqual(event['length'], 35)
+        self.assertEqual(event['length'], 6)
 
         # Reply packet body data
-        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHEN_STATUS_ERROR)
+        self.assertEqual(event['status'], flags.TAC_PLUS_AUTHEN_STATUS_FAIL)
         self.assertEqual(event['flags'], 0)
-        self.assertEqual(event['server_msg'], 'Functionality NOT implemented')
+        self.assertEqual(event['server_msg'], '')
         self.assertEqual(event['data'], '')
 
 

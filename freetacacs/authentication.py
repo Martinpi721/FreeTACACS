@@ -79,7 +79,7 @@ class AuthenStartFields(RequestFields):
         fields = f'action: {action}, priv_lvl: {priv_lvl},' \
                  f' authen_type: {authen_type}, authen_service: {authen_service},' \
                  f' user: {self.user}, port: {self.port},' \
-                 f' remote_address: {self.remote_address}, data: {self.data}'
+                 f' remote_address: {self.remote_address}, data: XXXSensitiveDataObfuscatedXXX'
 
         return fields
 

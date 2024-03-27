@@ -12,7 +12,6 @@ Functions:
 import sys
 from zope.interface import Interface, implementer
 
-from twisted.python import log
 from twisted.internet import defer
 from twisted.application import service
 from twisted.logger import (Logger,
@@ -21,6 +20,7 @@ from twisted.logger import (Logger,
                             LogLevelFilterPredicate)
 
 # Local imports
+from freetacacs import flags
 from freetacacs.version import __version__
 from freetacacs.configuration import load_config, valid_config
 from freetacacs.configuration import ConfigTypeError, ConfigFileError
@@ -31,7 +31,7 @@ class ITACACSPlusService(Interface):
         Return a deferred returning L{bytes}.
         """
 
-    def valid_credentials(username, password):
+    def valid_credentials(pkt):
         """
         Return a deferred returning L{bytes}.
         """
@@ -114,17 +114,31 @@ class TACACSPlusService(service.Service):
         return defer.succeed(self.secrets.get(ip, b"No such device"))
 
 
-    def valid_credentials(self, username, password):
+    def valid_credentials(self, pkt):
         """Validate a users credentials
 
         Args:
-          username(str): containing user accessing client device
-          password(str): containing password for user account
+          pkt(obj): authentication body object
         Exceptions:
           None
         Returns
-          secret(str): containing the shared secret key
+          authenticated(bool): user credentials are valid/invalid [True|False]
         """
+
+        # Decode the authentication packet body
+        pkt_fields = pkt.decode
+
+        # PAP auth uses plain text
+        if pkt_fields.authen_type == flags.TAC_PLUS_AUTHEN_TYPE_PAP:
+            username = pkt_fields.user
+            password = pkt_fields.data
+
+        # All CHAP auth derivitives use a challange hash
+        if pkt_fields.authen_type == flags.TAC_PLUS_AUTHEN_TYPE_CHAP:
+            username = pkt_fields.user
+            ppp_id, challange, response = pkt.chap('test', version='CHAP'))
+
+        # TODO
 
         return defer.succeed(self.credentials.get(username, False))
 
