@@ -106,9 +106,10 @@ class TACACSPlusProtocol(protocol.Protocol):
             """
 
             authenticated = value
+            packet_version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER_ONE
 
             # Build reply packet header
-            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+            tx_header_fields = HeaderFields(version=packet_version,
                                             packet_type=flags.TAC_PLUS_AUTHEN,
                                             session_id=rx_header_fields.session_id,
                                             sequence_no=rx_header_fields.sequence_no + 1)
@@ -183,9 +184,10 @@ class TACACSPlusProtocol(protocol.Protocol):
             """
 
             authenticated = value
+            packet_version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER_ONE
 
             # Build reply packet header
-            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+            tx_header_fields = HeaderFields(version=packet_version,
                                             packet_type=flags.TAC_PLUS_AUTHEN,
                                             session_id=rx_header_fields.session_id,
                                             sequence_no=rx_header_fields.sequence_no + 1)
@@ -299,6 +301,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             """
 
             shared_secret = value
+            packet_version = flags.TAC_PLUS_MAJOR_VER * 0x10
 
             pkt = AuthorRequestPacket(rx_header_fields, body=raw_body,
                                       secret=shared_secret)
@@ -311,7 +314,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.log.debug(kwargs['text'], **kwargs)
 
             # Build reply packet header
-            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+            tx_header_fields = HeaderFields(version=packet_version,
                                             packet_type=flags.TAC_PLUS_AUTHOR,
                                             session_id=rx_header_fields.session_id,
                                             sequence_no=rx_header_fields.sequence_no + 1)
@@ -367,6 +370,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             """
 
             shared_secret = value
+            packet_version = flags.TAC_PLUS_MAJOR_VER * 0x10
 
             pkt = AcctRequestPacket(rx_header_fields, body=raw_body,
                                     secret=shared_secret)
@@ -379,7 +383,7 @@ class TACACSPlusProtocol(protocol.Protocol):
             self.log.debug(kwargs['text'], **kwargs)
 
             # Build reply packet header
-            tx_header_fields = HeaderFields(version=rx_header_fields.version,
+            tx_header_fields = HeaderFields(version=packet_version,
                                             packet_type=flags.TAC_PLUS_ACCT,
                                             session_id=rx_header_fields.session_id,
                                             sequence_no=rx_header_fields.sequence_no + 1)

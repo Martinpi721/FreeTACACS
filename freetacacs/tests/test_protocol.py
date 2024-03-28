@@ -54,7 +54,7 @@ class TestTACACSPlusProtocol(unittest.TestCase):
         """Setup for all tests"""
 
         self._data_dir = './freetacacs/tests/data/commandline'
-        self._version = (flags.TAC_PLUS_MAJOR_VER * 0x10) + flags.TAC_PLUS_MINOR_VER
+        self._version = flags.TAC_PLUS_MAJOR_VER * 0x10
         self._auth_version = self._version + flags.TAC_PLUS_MINOR_VER_ONE
 
         args = [
