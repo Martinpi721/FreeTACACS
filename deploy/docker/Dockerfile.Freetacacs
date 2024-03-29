@@ -1,0 +1,27 @@
+# Use an official Python runtime as a parent image
+FROM python:3.12-alpine
+
+RUN mkdir -p /app/src
+RUN touch /tmp/freetacacs.log
+
+# Set the working directory in the container
+WORKDIR /app/src
+
+# Copy the current directory contents into the container at /app
+COPY . /app/src
+
+# Install any needed dependencies specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install .
+
+RUN addgroup -S freetacacs
+RUN adduser -S -D -G freetacacs freetacacs
+
+RUN cp /app/src/example-config.yml /etc/config.yml
+
+# Expose the port the app runs on
+EXPOSE 4949
+
+# Run the twisted application when the container launches
+CMD ["twistd", "-n", "freetacacs-start", "-p", "4949", "-c", "/etc/config.yml", "-l", "/tmp/freetacacs.log"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
