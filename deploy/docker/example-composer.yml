@@ -1,0 +1,14 @@
+version: '3'
+services:
+  freetacacs:
+    image: freetacacs:latest
+    container_name: freetacacs
+    restart: always
+    ports:
+      - 49:4949
+  client:
+    image: sshd:latest
+    container_name: client
+    restart: always
+    ports:
+      - 22:2222
