@@ -68,9 +68,11 @@ class CommandLineOptions(Options):
             if str(e).startswith('"getgrnam'):
                 raise UsageError(f"Group {self['group']} not found.")
 
-        # Check to see if log file exists
-        if not os.path.exists(self['log']):
-            raise UsageError(f"Log file {self['log']} not found.")
+        # Check to see if we should log to stdout
+        if self['log'] != '-':
+            # Check to see if log file exists
+            if not os.path.exists(self['log']):
+                raise UsageError(f"Log file {self['log']} not found.")
 
         # Get username of user running script
         current_user = getpass.getuser()

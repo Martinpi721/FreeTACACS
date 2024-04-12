@@ -59,7 +59,11 @@ class TACACSPlusService(service.Service):
         self.cfg = options
 
         # Setup logging
-        fileObserver = textFileLogObserver(open(self.cfg['log'], 'a'))
+        if self.cfg['log'] == '-':
+            stdout = sys.stdout
+            fileObserver = textFileLogObserver(stdout)
+        else:
+            fileObserver = textFileLogObserver(open(self.cfg['log'], 'a'))
         if self.cfg['debug']:
             predicate = LogLevelFilterPredicate(defaultLogLevel=log.LogLevel.debug)
             fObserver = FilteringLogObserver(observer=fileObserver, predicates=predicate)

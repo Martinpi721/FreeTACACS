@@ -8,9 +8,6 @@ WORKDIR /app/src
 COPY . /app/src
 
 RUN <<EOM
-# Create log file
-touch /tmp/freetacacs.log
-
 # Install any needed dependencies specified in requirements.txt
 pip install --no-cache-dir -r requirements.txt
 pip install .
@@ -27,4 +24,11 @@ EOM
 EXPOSE 4949
 
 # Run the twisted application when the container launches
-CMD ["twistd", "-n", "freetacacs-start", "-p", "4949", "-c", "/etc/config.yml", "-l", "/tmp/freetacacs.log"]
+# NOTE: both the application and twistd are configured to log to stdout
+CMD ["twistd", \
+     "-l", "-", \
+     "-n", \
+     "freetacacs-start", \
+     "-p", "4949", \
+     "-c", "/etc/config.yml", \
+     "-l", "-"]

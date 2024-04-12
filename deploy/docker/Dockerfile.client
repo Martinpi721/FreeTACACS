@@ -4,19 +4,19 @@ FROM ubuntu:22.04
 RUN <<EOM
 # Update and install packages
 apt-get update
-apt-get install -y openssh-server libpam-tacplus pamtester
+apt-get install -y openssh-server libpam-tacplus
 rm -rf /var/lib/apt/lists/*
 
 # Create privilege seperation directory
 mkdir -p /run/sshd
+
+# Add test user
+addgroup test
+adduser -D -G test test
 EOM
 
-COPY <<EOF /etc/pam.d/test
-#%PAM-1.0
-auth       required /usr/lib/security/pam_tacplus.so server=freetacacs:4949 secret=test
-account    required /usr/lib/security/pam_tacplus.so server=freetacacs:4949 secret=test service=ppp protocol=ip
-session    required /usr/lib/security/pam_tacplus.so server=freetacacs:4949 secret=test service=ppp protocol=ip
-EOF
+# Update sshd_config
+# Update pam.d/ssh
 
 # Expose the port the app runs on
 EXPOSE 2222
